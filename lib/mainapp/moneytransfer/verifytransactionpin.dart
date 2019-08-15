@@ -204,6 +204,7 @@ class _TransactionPinVerificationState
                 .document(_currentUser.uid)
                 .get()
                 .then((snapShot) {
+                  print(snapShot.data);
               if (_pinController.text.trim() ==
                   encryption
                       .decryptTransactionPin(snapShot.data['transactionPin'])) {

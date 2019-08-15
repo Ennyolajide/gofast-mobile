@@ -329,11 +329,12 @@ class _LoginState extends State<Login> {
             .document(user.uid)
             .get()
             .then((dataSnapshot) {
-          String onlineDeviceId = dataSnapshot.data['deviceId'];
-          print("Online user id=======> $onlineDeviceId");
-          print("current user id=======> ${user.uid}");
+          // String onlineDeviceId = dataSnapshot.data['deviceId'];
+          // print("Online user id=======> $onlineDeviceId");
+          // print("current user id=======> ${user.uid}");
 
-          if (onlineDeviceId == Preferences.deviceId) {
+          if (dataSnapshot.data != null &&
+              dataSnapshot.data['deviceId'] == Preferences.deviceId) {
             Preferences.phoneNumber = dataSnapshot.data['phoneNumber'];
             Preferences.firstname = dataSnapshot.data['firstname'];
             Preferences.lastname = dataSnapshot.data['lastname'];

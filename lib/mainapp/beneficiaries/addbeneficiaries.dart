@@ -393,6 +393,8 @@ class _AddBeneficiariesState extends State<AddBeneficiaries> {
           .get()
           .then((snapShot) {
         String onlineUserId = snapShot.data['deviceId'];
+        print(snapShot.data);
+        print(Preferences.deviceId);
         if (onlineUserId == Preferences.deviceId) {
           _verifyAccount();
         } else {

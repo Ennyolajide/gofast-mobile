@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gofast/mainapp/beneficiaries/addbeneficiaries.dart';
 import 'package:gofast/mainapp/moneytransfer/detailsforbeneficiarytransfer.dart';
 import 'package:gofast/persistence/preferences.dart';
 import 'package:gofast/utils/colors.dart';
@@ -102,17 +103,35 @@ class _TransferToBeneficiaryState extends State<TransferToBeneficiary> {
                           });
                     } else {
                       return Center(
-                        child: Container(
-                          child: Text(
-                            'You have no beneficiaries',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: AppColors.textColor,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold),
+                          child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Container(
+                            child: Text(
+                              'You have no beneficiaries',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        ),
-                      );
+                          InkWell(
+                              onTap: () {
+                                Navigator.of(context, rootNavigator: false)
+                                    .push(CupertinoPageRoute<bool>(
+                                        builder: (BuildContext context) => AddBeneficiaries()));
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.all(10.0),
+                                child: Text(
+                                  "Add Beneficiaries",
+                                  style: TextStyle(color: AppColors.textColor),
+                                ),
+                              ))
+                        ],
+                      ));
                     }
                   }
                 },

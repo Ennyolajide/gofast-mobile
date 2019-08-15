@@ -42,7 +42,7 @@ class _DetailsForbeneficiaryTransferState
     _amountController.addListener(() {
       String amountText =
           _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
-
+      print("amount $amountText");
       if (_amountController.text.isNotEmpty &&
           double.parse(amountText) >= 100) {
         double chargingFee = (1.43 / 100) * ((double.parse(amountText) + 55));

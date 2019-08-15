@@ -1,4 +1,4 @@
-package com.vic.villz.gofast
+package com.villz.gofast
 
 import android.os.Bundle
 

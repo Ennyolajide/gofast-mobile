@@ -294,6 +294,7 @@ class _EmailSetupState extends State<EmailSetup> {
       FirebaseUser user = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim());
+      print(user);
       if (user != null) {
         Encryption encryption =
             new Encryption(secretKey: UrlConstants.LIVE_SECRET_KEY);
@@ -306,7 +307,6 @@ class _EmailSetupState extends State<EmailSetup> {
             .document(user.uid)
             .setData(data)
             .then((data) {
-          removeDialog();
           Preferences.email = _emailController.text.trim();
 
           Navigator.of(context, rootNavigator: false).push(
@@ -322,6 +322,7 @@ class _EmailSetupState extends State<EmailSetup> {
       Utils.showSnackBar(e.message, _scaffoldKey);
 
       print("Error-------->: ${e.message}");
+      print(e);
     }
   }
 

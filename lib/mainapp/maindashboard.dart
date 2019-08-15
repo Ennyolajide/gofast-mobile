@@ -11,10 +11,13 @@ import 'package:gofast/mainapp/beneficiaries/view_beneficiaries.dart';
 import 'package:gofast/mainapp/changeprofileimage.dart';
 import 'package:gofast/mainapp/community/community.dart';
 import 'package:gofast/mainapp/community/services.dart';
+import 'package:gofast/mainapp/fund_wallet/fund_wallet.dart';
 import 'package:gofast/mainapp/milestones.dart';
 import 'package:gofast/mainapp/moneytransfer/receipient_details.dart';
+import 'package:gofast/mainapp/moneytransfer/select_account.dart';
 import 'package:gofast/mainapp/moneytransfer/transfertobeneficiary.dart';
 import 'package:gofast/mainapp/settings.dart';
+import 'package:gofast/mainapp/transfer/new_transfer.dart';
 import 'package:gofast/mainapp/updateProfile.dart';
 import 'package:gofast/mainapp/view_transfers.dart';
 import 'package:gofast/onboarding/bankAccountSetup/addbank.dart';
@@ -38,12 +41,40 @@ class _MainDashboardState extends State<MainDashboard>
   Firestore _firestore = Firestore.instance;
   bool _uidLoaded = false;
   bool _loadTransfer = false;
+  bool loadingWallet = false;
+  Map wallet = new Map();
 
   @override
   void initState() {
     super.initState();
     _getCurrentUser();
     _initPreferences();
+  }
+
+  void _loadWallet() async {
+    print("Loading wallet");
+    setState(() {
+      loadingWallet = true;
+    });
+    if (_uidLoaded) {
+      DocumentSnapshot w = await _firestore
+          .collection("Wallet")
+          .document(_firebaseUser.uid)
+          .get();
+      if (w.exists) {
+        print("data: ${w.data}");
+        String balance = w.data["balance"].toString();
+        String currency = w.data["currency"].toString();
+        setState(() {
+          wallet["balance"] = balance;
+          wallet["currency"] = currency;
+        });
+      }
+    }
+
+    setState(() {
+      loadingWallet = false;
+    });
   }
 
   void _getCurrentUser() {
@@ -53,6 +84,7 @@ class _MainDashboardState extends State<MainDashboard>
           _firebaseUser = user;
           _uidLoaded = true;
         });
+        _loadWallet();
       }
     });
   }
@@ -70,7 +102,7 @@ class _MainDashboardState extends State<MainDashboard>
         drawer: _buildDrawer(),
         body: ListView(
           children: <Widget>[
-            _buildHeader(),
+            _buildHeader(loading: loadingWallet, data: wallet),
             _buildQuickServices(),
             _buildHistoryContainer(),
             _buildHistoryItems()
@@ -375,7 +407,7 @@ class _MainDashboardState extends State<MainDashboard>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader({bool loading, Map data}) {
     return Stack(
       children: <Widget>[
         Container(
@@ -462,7 +494,7 @@ class _MainDashboardState extends State<MainDashboard>
                   ],
                 ),
               ),
-              _buildAccountSlides()
+              _buildAccountSlides(loading: loading, data: data)
             ],
           ),
         )
@@ -470,94 +502,63 @@ class _MainDashboardState extends State<MainDashboard>
     );
   }
 
-  Widget _buildAccountSlides() {
-    return (_uidLoaded)
-        ? StreamBuilder(
-            stream: _firestore
-                .collection("Users")
-                .document(_firebaseUser.uid)
-                .collection("Accounts")
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Center(
-                    child: Container(
-                  margin: EdgeInsets.only(top: 15),
-                  child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-                ));
-              }
-              if (snapshot.hasError) {
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 19),
-                  height: 110,
-                  child: Center(
-                    child: Text(
-                      'An error occurred retrieving accounts',
-                      textAlign: TextAlign.center,
-                      style:
-                          TextStyle(color: AppColors.textColor, fontSize: 16),
-                    ),
+  Widget _buildAccountSlides({bool loading, Map data}) {
+    if (loading) {
+      return Center(
+          child: Container(
+        margin: EdgeInsets.only(top: 15),
+        child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+      ));
+    }
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 19),
+      height: 130,
+      child: Card(
+        elevation: 8,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'Wallet Balance',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16,
+                    fontWeight: FontWeight.normal),
+              ),
+              Text(
+                '${data["currency"]} ${data["balance"]}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: AppColors.buttonColor,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold),
+              ),
+              InkWell(
+                child: MaterialButton(
+                  color: AppColors.buttonColor,
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: false)
+                        .push(new CupertinoPageRoute<bool>(builder: (context) {
+                      return FundWallet();
+                    }));
+                  },
+                  child: Text(
+                    "Fund Wallet",
+                    style: TextStyle(color: Colors.white),
                   ),
-                );
-              }
-              if (snapshot.hasData) {
-                if (snapshot.data.documents.length > 0) {
-                  return _buildAccountContent(snapshot);
-                } else {
-                  return Container(
-                    margin: EdgeInsets.symmetric(horizontal: 19),
-                    height: 110,
-                    child: Card(
-                      elevation: 8,
-                      margin: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Text(
-                              'You have no account, tap to add.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: AppColors.textColor,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 4),
-                            InkWell(
-                              onTap: () {
-                                Navigator.of(context, rootNavigator: false)
-                                    .push(new CupertinoPageRoute<bool>(
-                                        builder: (context) {
-                                  return AddAccount(fromOnboarding: false);
-                                }));
-                              },
-                              child: ClipOval(
-                                child: Container(
-                                  color: AppColors.floatingBtnColor,
-                                  height: 36,
-                                  width: 36,
-                                  child: Icon(
-                                    Icons.add,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }
-              }
-            },
-          )
-        : SizedBox();
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildAccountContent(AsyncSnapshot snapshot) {
@@ -729,11 +730,14 @@ class _MainDashboardState extends State<MainDashboard>
             ],
           ),
         ),
-
         InkWell(
           child: _buildTransferItem(),
           onTap: () {
-            _showComingSoonDialog();
+            // _showComingSoonDialog();
+            Navigator.of(context, rootNavigator: false)
+                .push(CupertinoPageRoute<bool>(
+              builder: (BuildContext context) => TransferToBeneficiary(),
+            ));
           },
         ),
         SizedBox(height: 10),
@@ -770,154 +774,6 @@ class _MainDashboardState extends State<MainDashboard>
                 ),
               );
             })
-
-//        Container(
-//          height: 80,
-//          child: Center(
-//            child: ListView(
-//              shrinkWrap: true,
-//              scrollDirection: Axis.horizontal,
-//              children: <Widget>[
-//                InkWell(
-//                  onTap: () {
-////                  _showSelectionDialog();
-//                    _showComingSoonDialog();
-//                  },
-//                  child: Container(
-////                  width: 80,
-//                    padding:
-//                        EdgeInsets.only(top: 17, bottom: 9, left: 9, right: 9),
-//                    decoration: BoxDecoration(
-//                        border: Border.all(
-//                            color: AppColors.onboardingTextFieldBorder),
-//                        borderRadius: BorderRadius.circular(15)),
-//                    child: Column(
-//                      children: <Widget>[
-//                        Image.asset(
-//                          'assets/bank.png',
-//                          width: 30,
-//                          height: 30,
-//                        ),
-//                        SizedBox(height: 8),
-//                        Text('Transfer funds',
-//                            style: TextStyle(
-//                                color: AppColors.goldBgColor,
-//                                fontSize: 9,
-//                                fontFamily: 'MontserratSemiBold'))
-//                      ],
-//                    ),
-//                  ),
-//                ),
-//                SizedBox(width: 10),
-//                InkWell(
-//                  onTap: () {
-//                    Navigator.of(context, rootNavigator: false).push(
-//                      CupertinoPageRoute<bool>(
-//                        builder: (BuildContext context) => ViewTransfers(),
-//                      ),
-//                    );
-//                  },
-//                  child: Container(
-////                  width: 80,
-//                    padding:
-//                        EdgeInsets.only(top: 17, bottom: 9, left: 9, right: 9),
-//                    decoration: BoxDecoration(
-//                        border: Border.all(
-//                            color: AppColors.onboardingTextFieldBorder),
-//                        borderRadius: BorderRadius.circular(15)),
-//                    child: Column(
-//                      children: <Widget>[
-//                        Image.asset(
-//                          'assets/money_transfer.png',
-//                          width: 30,
-//                          height: 30,
-//                        ),
-//                        SizedBox(height: 8),
-//                        Text('View transfers',
-//                            style: TextStyle(
-//                                color: AppColors.goldBgColor,
-//                                fontSize: 9,
-//                                fontFamily: 'MontserratSemiBold'))
-//                      ],
-//                    ),
-//                  ),
-//                ),
-//                SizedBox(width: 10),
-//                InkWell(
-//                  onTap: () {
-//                    Navigator.of(context, rootNavigator: false).push(
-//                      CupertinoPageRoute<bool>(
-//                        builder: (BuildContext context) => Beneficiaries(),
-//                      ),
-//                    );
-//                  },
-//                  child: Container(
-////                  width: 80,
-//                    padding: EdgeInsets.only(
-//                        top: 17, bottom: 9, left: 10, right: 10),
-//                    decoration: BoxDecoration(
-//                        border: Border.all(
-//                            color: AppColors.onboardingTextFieldBorder),
-//                        borderRadius: BorderRadius.circular(15)),
-//                    child: Column(
-//                      children: <Widget>[
-//                        Image.asset(
-//                          'assets/quick_transfer.png',
-//                          width: 30,
-//                          height: 30,
-//                        ),
-//                        SizedBox(height: 8),
-//                        Text('Beneficiaries',
-//                            style: TextStyle(
-//                                color: AppColors.goldBgColor,
-//                                fontSize: 9,
-//                                fontFamily: 'MontserratSemiBold'))
-//                      ],
-//                    ),
-//                  ),
-//                ),
-//                SizedBox(width: 10),
-//                InkWell(
-//                  onTap: () {
-//                    Navigator.of(context, rootNavigator: false).push(
-//                      CupertinoPageRoute<bool>(
-//                        builder: (BuildContext context) =>
-//                            Preferences.signedUpForCommunity
-//                                ? CommunityPage()
-//                                : Services(),
-//                      ),
-//                    );
-//                  },
-//                  child: Container(
-////                  width: 80,
-//                    padding: EdgeInsets.only(
-//                        top: 17, bottom: 9, left: 20, right: 20),
-//                    decoration: BoxDecoration(
-//                        border: Border.all(
-//                            color: AppColors.onboardingTextFieldBorder),
-//                        borderRadius: BorderRadius.circular(15)),
-//                    child: Column(
-//                      children: <Widget>[
-//                        Image.asset(
-//                          'assets/quick_services.png',
-//                          width: 30,
-//                          height: 30,
-//                        ),
-//                        SizedBox(height: 8),
-//                        Text('Services',
-//                            style: TextStyle(
-//                                color: AppColors.goldBgColor,
-//                                fontSize: 9,
-//                                fontFamily: 'MontserratSemiBold'))
-//                      ],
-//                    ),
-//                  ),
-//                ),
-////                SizedBox(width: 10),
-//              ],
-//            ),
-//          ),
-//        )
       ],
     );
   }

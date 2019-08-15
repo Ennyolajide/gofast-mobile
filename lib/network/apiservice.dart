@@ -20,6 +20,7 @@ import 'package:gofast/network/response/sendotpresponse.dart';
 import 'package:gofast/network/response/validatechargeresponse.dart';
 import 'package:gofast/network/response/validateotpresponse.dart';
 import 'package:gofast/network/response/verifyaccchargeresponse.dart';
+import 'package:gofast/utils/encryption.dart';
 import 'package:http/http.dart' as http;
 
 class NetworkService {
@@ -324,6 +325,156 @@ class NetworkService {
     }
 
     return response;
+  }
+
+  Future<http.Response> chargeCard({
+    String cardNo,
+    String cvv,
+    String expMonth,
+    String expYear,
+    String currency,
+    String country,
+    String amount,
+    String pin,
+    String suggested_auth,
+    String email,
+    String billingzip,
+    String billingcity,
+    String billingaddress,
+    String billingstate,
+    String billingcountry,
+    // String firstName,
+    // String lastName,
+    // String ip,
+    String txtRef,
+  }) async {
+    try {
+      String url =
+          "${UrlConstants.RAVE_BASE_URL}/flwv3-pug/getpaidx/api/charge";
+      dynamic body;
+      if (suggested_auth == null) {
+        body = {
+          "PBFPubKey": UrlConstants.LIVE_PUBLIC_KEY,
+          "cardno": cardNo,
+          "cvv": cvv,
+          "expirymonth": expMonth,
+          "expiryyear": expYear,
+          "currency": currency,
+          "country": country,
+          "amount": amount,
+          "email": email,
+          // "phonenumber": phoneNumber,
+          // "firstname": firstName,
+          // "lastname": lastName,
+          // "IP": ip,
+          "txRef": txtRef, // your unique merchant reference
+          // "meta": new Map([{ metaname: "flightID", metavalue: "123949494DC"}]),
+          "redirect_url": UrlConstants.FLUTTERWAVE_REDIRECT_URL,
+          // "device_fingerprint": "69e6b7f0b72037aa8428b70fbe03986c"
+        };
+      } else {
+        switch (suggested_auth) {
+          case "PIN":
+            body = {
+              "PBFPubKey": UrlConstants.LIVE_PUBLIC_KEY,
+              "cardno": cardNo,
+              "cvv": cvv,
+              "expirymonth": expMonth,
+              "expiryyear": expYear,
+              "currency": currency,
+              "country": country,
+              "amount": amount,
+              "suggested_auth": suggested_auth,
+              "pin": pin,
+              "email": email,
+              // "email": email,
+              // "phonenumber": phoneNumber,
+              // "firstname": firstName,
+              // "lastname": lastName,
+              // "IP": ip,
+              "txRef": txtRef, // your unique merchant reference
+              // "meta": new Map([{ metaname: "flightID", metavalue: "123949494DC"}]),
+              "redirect_url":
+                  "https://rave-webhook.herokuapp.com/receivepayment",
+              // "device_fingerprint": "69e6b7f0b72037aa8428b70fbe03986c"
+            };
+            break;
+          case "NOAUTH_INTERNATIONAL":
+            body = {
+              "PBFPubKey": UrlConstants.LIVE_PUBLIC_KEY,
+              "cardno": cardNo,
+              "cvv": cvv,
+              "expirymonth": expMonth,
+              "expiryyear": expYear,
+              "currency": currency,
+              "country": country,
+              "amount": amount,
+              "suggested_auth": suggested_auth,
+              "pin": pin,
+              "email": email,
+              "suggested_auth": "NOAUTH_INTERNATIONAL",
+              "billingzip": billingzip,
+              "billingcity": billingcity,
+              "billingaddress": billingaddress,
+              "billingstate": billingstate,
+              "billingcountry": billingcountry,
+              "txRef": txtRef, // your unique merchant reference
+              // "meta": new Map([{ metaname: "flightID", metavalue: "123949494DC"}]),
+              "redirect_url":
+                  "https://rave-webhook.herokuapp.com/receivepayment",
+              // "device_fingerprint": "69e6b7f0b72037aa8428b70fbe03986c"
+            };
+            break;
+          default:
+            throw ("Card Not Supported");
+        }
+      }
+      Encryption _encryption =
+          new Encryption(secretKey: UrlConstants.LIVE_SECRET_KEY);
+
+      String client = _encryption.encrypt(body);
+
+      http.Response res = await http.post(url,
+          body: json.encode({
+            "PBFPubKey": UrlConstants.LIVE_PUBLIC_KEY,
+            "client": client,
+            "alg": "3DES-24"
+          }),
+          headers: {"Content-Type": "application/json"});
+
+      return res;
+    } catch (e) {
+      print("Charging Card Error:--->$e");
+      throw e;
+    }
+  }
+  
+  Future<http.Response> validateCharge({
+    String transaction_reference,
+    String otp,
+  }) async {
+    try {
+      String url =
+          "${UrlConstants.RAVE_BASE_URL}/flwv3-pug/getpaidx/api/validatecharge";
+      dynamic body = {
+          "PBFPubKey": UrlConstants.LIVE_PUBLIC_KEY,
+          "transaction_reference": transaction_reference,
+          "otp": otp
+        };
+      
+      // Encryption _encryption =
+      //     new Encryption(secretKey: UrlConstants.LIVE_SECRET_KEY);
+      // String client = _encryption.encrypt(body);
+
+      http.Response res = await http.post(url,
+          body: json.encode(body),
+          headers: {"Content-Type": "application/json"});
+
+      return res;
+    } catch (e) {
+      print("Validating Card Charge Error:--->$e");
+      throw e;
+    }
   }
 
   Future<InitiatePaymentResponse> initiateAccountCharge(
