@@ -282,7 +282,7 @@ class _InitiateChargeOtpState extends State<InitiateChargeOtp> {
 
     request.account_bank = widget.bankCode;
     request.account_number = widget.accountNumber;
-    request.amount = double.parse(widget.transferAmount).truncate();
+    // request.amount = double.parse(widget.transferAmount).truncate();
     request.narration = widget.remarks;
     request.seckey = UrlConstants.LIVE_SECRET_KEY;
     request.reference = widget.txRef;

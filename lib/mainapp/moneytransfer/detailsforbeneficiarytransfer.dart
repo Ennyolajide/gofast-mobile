@@ -84,7 +84,7 @@ class _DetailsForbeneficiaryTransferState
             key: _formKey,
             child: ListView(
               children: <Widget>[
-                _buildBvnContainer(),
+                // _buildBvnContainer(),
                 _buildServiceFeeCharge(),
                 _buildAmountEntry(),
                 _buildTransferReasonEntry(),

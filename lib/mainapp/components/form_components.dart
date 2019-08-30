@@ -13,9 +13,9 @@ Widget textField(
           Text(
             label,
             style: TextStyle(
-                color: AppColors.onboardingPlaceholderText,
-                fontSize: 12,
-                fontWeight: FontWeight.w600),
+                  color: AppColors.onboardingPlaceholderText,
+                  fontSize: 17,
+                  fontFamily: 'MontserratSemiBold'),
           ),
           TextFormField(
             controller: controller,
@@ -54,10 +54,10 @@ Widget numberField(
         children: <Widget>[
           Text(
             label,
-            style: TextStyle(
-                color: AppColors.onboardingPlaceholderText,
-                fontSize: 12,
-                fontWeight: FontWeight.w600),
+            style:TextStyle(
+                  color: AppColors.onboardingPlaceholderText,
+                  fontSize: 17,
+                  fontFamily: 'MontserratSemiBold'),
           ),
           TextFormField(
             textAlign: textAlign != null ? textAlign : null,
@@ -103,9 +103,9 @@ Widget pinField(
           Text(
             label,
             style: TextStyle(
-                color: AppColors.onboardingPlaceholderText,
-                fontSize: 12,
-                fontWeight: FontWeight.w600),
+                  color: AppColors.onboardingPlaceholderText,
+                  fontSize: 17,
+                  fontFamily: 'MontserratSemiBold'),
           ),
           TextFormField(
             textAlign: textAlign != null ? textAlign : null,
@@ -168,9 +168,9 @@ Widget dateField(
           Text(
             label,
             style: TextStyle(
-                color: AppColors.onboardingPlaceholderText,
-                fontSize: 12,
-                fontWeight: FontWeight.w600),
+                  color: AppColors.onboardingPlaceholderText,
+                  fontSize: 17,
+                  fontFamily: 'MontserratSemiBold'),
           ),
           TextFormField(
             keyboardType: TextInputType.number,

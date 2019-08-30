@@ -1,17 +1,24 @@
 class InitiateTransferRequest {
   String _account_bank;
   String _account_number;
-  int _amount;
+  double _amount;
   String _seckey;
   String _narration;
   String _currency;
   String _reference;
   String _beneficiary_name;
+  Map _meta;
 
   String get account_bank => _account_bank;
 
   set account_bank(String value) {
     _account_bank = value;
+  }
+
+  Map get meta => _meta;
+
+  set meta(Map value) {
+    _meta = value;
   }
 
   String get account_number => _account_number;
@@ -46,9 +53,9 @@ class InitiateTransferRequest {
     _seckey = value;
   }
 
-  int get amount => _amount;
+  double get amount => _amount;
 
-  set amount(int value) {
+  set amount(double value) {
     _amount = value;
   }
 
@@ -67,6 +74,9 @@ class InitiateTransferRequest {
     data['reference'] = this.reference;
     if (this.currency != "NGN") {
       data['beneficiary_name'] = this.beneficiary_name;
+    }
+    if(meta != null){
+      data["meta"] = this.meta;
     }
 
     return data;

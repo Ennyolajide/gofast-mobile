@@ -448,7 +448,7 @@ class NetworkService {
       throw e;
     }
   }
-  
+
   Future<http.Response> validateCharge({
     String transaction_reference,
     String otp,
@@ -457,11 +457,11 @@ class NetworkService {
       String url =
           "${UrlConstants.RAVE_BASE_URL}/flwv3-pug/getpaidx/api/validatecharge";
       dynamic body = {
-          "PBFPubKey": UrlConstants.LIVE_PUBLIC_KEY,
-          "transaction_reference": transaction_reference,
-          "otp": otp
-        };
-      
+        "PBFPubKey": UrlConstants.LIVE_PUBLIC_KEY,
+        "transaction_reference": transaction_reference,
+        "otp": otp
+      };
+
       // Encryption _encryption =
       //     new Encryption(secretKey: UrlConstants.LIVE_SECRET_KEY);
       // String client = _encryption.encrypt(body);
@@ -476,6 +476,44 @@ class NetworkService {
       throw e;
     }
   }
+
+  // Future<http.Response> initiateTransfer({
+  //   String txRef,
+  //   String accountNumber,
+  //   String amount,
+  //   String transferAmount,
+  //   String remarks,
+  //   String bankCode,
+  //   String currency,
+  //   String beneficiaryName,
+  // }) async {
+  //   try {
+  //     String url = "${UrlConstants.RAVE_BASE_URL}/gpx/transfers/create";
+  //     dynamic body = {
+  //       "account_bank": bankCode,
+  //       "account_number": accountNumber,
+  //       "amount": 500,
+  //       "seckey": UrlConstants.LIVE_SECRET_KEY,
+  //       "narration": remarks,
+  //       "currency": currency,
+  //       "reference": txRef,
+  //       "beneficiary_name": beneficiaryName // only pass this for non NGN
+  //     };
+
+  //     // Encryption _encryption =
+  //     //     new Encryption(secretKey: UrlConstants.LIVE_SECRET_KEY);
+  //     // String client = _encryption.encrypt(body);
+
+  //     http.Response res = await http.post(url,
+  //         body: json.encode(body),
+  //         headers: {"Content-Type": "application/json"});
+
+  //     return res;
+  //   } catch (e) {
+  //     print("Validating Card Charge Error:--->$e");
+  //     throw e;
+  //   }
+  // }
 
   Future<InitiatePaymentResponse> initiateAccountCharge(
       InitiatePaymentRequest request) async {

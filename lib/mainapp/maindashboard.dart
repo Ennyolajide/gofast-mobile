@@ -16,6 +16,7 @@ import 'package:gofast/mainapp/milestones.dart';
 import 'package:gofast/mainapp/moneytransfer/receipient_details.dart';
 import 'package:gofast/mainapp/moneytransfer/select_account.dart';
 import 'package:gofast/mainapp/moneytransfer/transfertobeneficiary.dart';
+import 'package:gofast/mainapp/moneytransfer/usd_transfer.dart';
 import 'package:gofast/mainapp/settings.dart';
 import 'package:gofast/mainapp/transfer/new_transfer.dart';
 import 'package:gofast/mainapp/updateProfile.dart';
@@ -53,9 +54,9 @@ class _MainDashboardState extends State<MainDashboard>
 
   void _loadWallet() async {
     print("Loading wallet");
-    setState(() {
-      loadingWallet = true;
-    });
+    // setState(() {
+    //   loadingWallet = true;
+    // });
     if (_uidLoaded) {
       DocumentSnapshot w = await _firestore
           .collection("Wallet")
@@ -72,9 +73,9 @@ class _MainDashboardState extends State<MainDashboard>
       }
     }
 
-    setState(() {
-      loadingWallet = false;
-    });
+    // setState(() {
+    //   loadingWallet = false;
+    // });
   }
 
   void _getCurrentUser() {
@@ -212,7 +213,8 @@ class _MainDashboardState extends State<MainDashboard>
               )),
           _buildListTile('assets/user.png', "My Account",
               launchPage: MyAccount()),
-          _buildTransferListTile('assets/transfer_funds.png', "Transfer Funds"),
+          _buildListTile('assets/transfer_funds.png', "Transfer Funds",
+              onTap: _showSelectionDialog),
           _buildListTile('assets/transfer.png', "My Transfers",
               launchPage: ViewTransfers()),
           _buildListTile('assets/beneficiaries.png', "Beneficiaries List",
@@ -385,13 +387,18 @@ class _MainDashboardState extends State<MainDashboard>
     );
   }
 
-  Widget _buildListTile(String image, String title, {Widget launchPage}) {
+  Widget _buildListTile(String image, String title,
+      {Widget launchPage, Function onTap}) {
     return ListTile(
       onTap: () {
-        Navigator.pop(context);
-        if (launchPage != null) {
-          Navigator.push(
-              context, CupertinoPageRoute(builder: (context) => launchPage));
+        if (onTap != null) {
+          onTap();
+        } else {
+          Navigator.pop(context);
+          if (launchPage != null) {
+            Navigator.push(
+                context, CupertinoPageRoute(builder: (context) => launchPage));
+          }
         }
       },
       leading: Image.asset(image, width: 20, height: 20),
@@ -532,7 +539,7 @@ class _MainDashboardState extends State<MainDashboard>
                     fontWeight: FontWeight.normal),
               ),
               Text(
-                '${data["currency"]} ${data["balance"]}',
+                '${data["currency"] != null ? data["currency"] : "NGN"} ${data["balance"] != null ? data["balance"] : "0.0"}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: AppColors.buttonColor,
@@ -733,11 +740,12 @@ class _MainDashboardState extends State<MainDashboard>
         InkWell(
           child: _buildTransferItem(),
           onTap: () {
+            _showSelectionDialog();
             // _showComingSoonDialog();
-            Navigator.of(context, rootNavigator: false)
-                .push(CupertinoPageRoute<bool>(
-              builder: (BuildContext context) => TransferToBeneficiary(),
-            ));
+            // Navigator.of(context, rootNavigator: false)
+            //     .push(CupertinoPageRoute<bool>(
+            //   builder: (BuildContext context) => TransferToBeneficiary(),
+            // ));
           },
         ),
         SizedBox(height: 10),
@@ -1211,6 +1219,24 @@ class _MainDashboardState extends State<MainDashboard>
                         CupertinoPageRoute<bool>(
                           builder: (BuildContext context) =>
                               TransferToBeneficiary(),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text(
+                      'Transfer to US Account',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context, rootNavigator: false).push(
+                        CupertinoPageRoute<bool>(
+                          builder: (BuildContext context) =>
+                              TransferUSD(),
                         ),
                       );
                     },

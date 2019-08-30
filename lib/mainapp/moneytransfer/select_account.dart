@@ -251,7 +251,6 @@ class _SelectAccountState extends State<SelectAccount>
         Utils.showErrorDialog(context, "Error", "${response.message}");
       }
     }).catchError((e) {
-//    if it crashes
       _removeDialog();
       Utils.showErrorDialog(context, "Error", "An error occured, try again");
     });

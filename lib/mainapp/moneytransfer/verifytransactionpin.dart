@@ -1,9 +1,16 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gofast/config/urlconstants.dart';
+import 'package:gofast/mainapp/fund_wallet/fund_wallet.dart';
+import 'package:gofast/mainapp/maindashboard.dart';
 import 'package:gofast/mainapp/moneytransfer/select_account.dart';
+import 'package:gofast/network/apiservice.dart';
+import 'package:gofast/network/request/initiatetransferrequest.dart';
+import 'package:gofast/network/response/initiatetransferresponse.dart';
 import 'package:gofast/persistence/preferences.dart';
 import 'package:gofast/utils/colors.dart';
 import 'package:gofast/utils/encryption.dart';
@@ -18,6 +25,7 @@ class TransactionPinVerification extends StatefulWidget {
   String bankCode;
   String currency;
   String beneficiaryName;
+  Map<String, dynamic> meta;
 
   TransactionPinVerification(
       {this.accountNumber,
@@ -27,7 +35,8 @@ class TransactionPinVerification extends StatefulWidget {
       this.bvn,
       this.bankCode,
       this.currency,
-      this.beneficiaryName});
+      this.beneficiaryName, 
+      this.meta});
 
   @override
   _TransactionPinVerificationState createState() =>
@@ -44,6 +53,9 @@ class _TransactionPinVerificationState
   FirebaseUser _currentUser;
   Firestore _firestore = Firestore.instance;
   BuildContext _dialogContext;
+  bool _loadTransfer = false;
+  bool loadingWallet = false;
+  Map wallet = new Map();
 
   @override
   void initState() {
@@ -51,10 +63,37 @@ class _TransactionPinVerificationState
     super.initState();
   }
 
+  void _loadWallet() async {
+    print("Loading wallet");
+    setState(() {
+      loadingWallet = true;
+    });
+    if (_currentUser != null) {
+      DocumentSnapshot w = await _firestore
+          .collection("Wallet")
+          .document(_currentUser.uid)
+          .get();
+      if (w.exists) {
+        print("data: ${w.data}");
+        String balance = w.data["balance"].toString();
+        String currency = w.data["currency"].toString();
+        setState(() {
+          wallet["balance"] = balance;
+          wallet["currency"] = currency;
+        });
+      }
+    }
+
+    setState(() {
+      loadingWallet = false;
+    });
+  }
+
   void _getCurrentuser() {
     _mAuth.currentUser().then((user) {
       if (user != null) {
         _currentUser = user;
+        _loadWallet();
       }
     });
   }
@@ -189,70 +228,335 @@ class _TransactionPinVerificationState
 
     if (form.validate()) {
       _showDialog("Verifying pin..");
-      if (_currentUser != null) {
-        _firestore
-            .collection("Users")
-            .document(_currentUser.uid)
-            .get()
-            .then((snapShot) {
-          String onlineUserId = snapShot.data['deviceId'];
-          if (onlineUserId == Preferences.deviceId) {
-            Encryption encryption =
-                new Encryption(secretKey: UrlConstants.LIVE_SECRET_KEY);
-            _firestore
-                .collection("Users")
-                .document(_currentUser.uid)
-                .get()
-                .then((snapShot) {
-                  print(snapShot.data);
-              if (_pinController.text.trim() ==
-                  encryption
-                      .decryptTransactionPin(snapShot.data['transactionPin'])) {
-                _removeDialog();
-                _pinController.clear();
-                setState(() {
-                  _autoValidate = false;
-                });
-                _moveSelectAccount();
-              } else {
-                _removeDialog();
-                Utils.showErrorDialog(context, "Pin verification failed",
-                    "Transaction pin is invalid!");
-              }
-            });
-          } else {
-            _removeDialog();
-            Utils.showErrorDialog(context, "Authentication failed!",
-                "You have been signed out of this device.");
-          }
-        });
-      } else {
+      try {
+        if (_currentUser != null) {
+          _firestore
+              .collection("Users")
+              .document(_currentUser.uid)
+              .get()
+              .then((snapShot) {
+            String onlineUserId = snapShot.data['deviceId'];
+            if (onlineUserId == Preferences.deviceId) {
+              Encryption encryption =
+                  new Encryption(secretKey: UrlConstants.LIVE_SECRET_KEY);
+              _firestore
+                  .collection("Users")
+                  .document(_currentUser.uid)
+                  .get()
+                  .then((snapShot) {
+                print(snapShot.data);
+                if (_pinController.text.trim() ==
+                    encryption.decryptTransactionPin(
+                        snapShot.data['transactionPin'])) {
+                  _removeDialog();
+                  _pinController.clear();
+                  setState(() {
+                    _autoValidate = false;
+                  });
+                  _initiateTransfer();
+                } else {
+                  _removeDialog();
+                  Utils.showErrorDialog(context, "Pin verification failed",
+                      "Transaction pin is invalid!");
+                }
+              });
+            } else {
+              _removeDialog();
+              Utils.showErrorDialog(context, "Authentication failed!",
+                  "You have been signed out of this device.");
+            }
+          });
+        } else {
+          _removeDialog();
+          Utils.showErrorDialog(context, "Authentication failed!",
+              "You have been signed out of this device.");
+        }
+      } catch (e) {
         _removeDialog();
-        Utils.showErrorDialog(context, "Authentication failed!",
-            "You have been signed out of this device.");
       }
     }
   }
 
-  void _moveSelectAccount() {
-    Navigator.of(context, rootNavigator: false).push(
-      CupertinoPageRoute<bool>(
-        builder: (BuildContext context) => SelectAccount(
-              accountNumber: widget.accountNumber,
-              amount: widget.amount,
-              transferAmount: widget.transferAmount,
-              bankCode: widget.bankCode,
-              bvn: widget.bvn,
-              remarks: widget.remarks,
-              currency: widget.currency,
-              beneficiaryName: widget.beneficiaryName,
-            ),
-      ),
-    );
+  void _initiateTransfer() async {
+    _showDialog("Initiating Transfer...");
+    print("wal: $wallet");
+    if (wallet["balance"] == null) {
+      _showFundWalletDialog("You haven't Funded your wallet",
+          " Fund Wallet Now to make transfer");
+      return;
+    }
+
+    if (double.parse(wallet["balance"]) < double.parse(widget.amount)) {
+      _showFundWalletDialog(
+          "Insufficient fund in wallet!", " Fund Wallet Now to make transfer");
+      return;
+    }
+
+    // try {
+    NetworkService networkService = new NetworkService();
+    InitiateTransferRequest req = new InitiateTransferRequest();
+    req.account_bank = widget.bankCode;
+    req.account_number = widget.accountNumber;
+    req.amount = double.parse(widget.transferAmount);
+    req.beneficiary_name = widget.beneficiaryName;
+    req.currency = widget.currency;
+    req.narration = widget.remarks;
+    req.meta = widget.meta;
+    req.seckey = UrlConstants.LIVE_SECRET_KEY;
+
+    InitiateTransferResponse response =
+        await networkService.initiateTransfer(req);
+        
+    print("transfer res:: ${response.data}");
+    if (response?.data != null) {
+      if (response.status == "success" && response?.data?.status == "NEW") {
+        _addTransferToFirebase(
+            response?.data?.reference,
+            response?.data?.dateCreated,
+            response?.data?.narration,
+            response?.data?.bankName,
+            response?.data?.currency);
+        Map<String, dynamic> updatedwallet = new Map();
+        print("balance ${wallet["balance"]}");
+        updatedwallet["balance"] = double.parse(wallet["balance"]) -
+            double.parse(widget.transferAmount);
+
+        await _firestore
+            .collection("Wallet")
+            .document(_currentUser.uid)
+            .updateData(updatedwallet);
+      } else {
+        _removeDialog();
+        print("message -->${response.message}");
+        Utils.showErrorDialog(context, "Error", "${response.message}");
+      }
+    } else {
+      _removeDialog();
+      print("message -->${response.message}");
+      Utils.showErrorDialog(context, "Error", "An error occured, try again");
+    }
+    print("Intiate Transfer  ${response.data}");
+    // } catch (e) {
+    //   print(e);
+    //   _removeDialog();
+    //   throw e;
+    // }
+
+    // Navigator.of(context, rootNavigator: false).push(
+    //   CupertinoPageRoute<bool>(
+    //     builder: (BuildContext context) => SelectAccount(
+    //           accountNumber: widget.accountNumber,
+    //           amount: widget.amount,
+    //           transferAmount: widget.transferAmount,
+    //           bankCode: widget.bankCode,
+    //           bvn: widget.bvn,
+    //           remarks: widget.remarks,
+    //           currency: widget.currency,
+    //           beneficiaryName: widget.beneficiaryName,
+    //         ),
+    //   ),
+    // );
   }
 
   void _removeDialog() {
     Navigator.of(_dialogContext).pop();
+  }
+
+  void _addTransferToFirebase(String ref, String dateCreated, String remarks,
+      String bankname, String currency) {
+    Map<String, dynamic> map = new Map();
+    map['accountNumber'] = widget.accountNumber;
+    map['accountName'] = widget.beneficiaryName;
+    map['bankName'] = bankname;
+    map['time'] = dateCreated;
+    map['amount'] = double.parse(widget.transferAmount).truncate().toString();
+    map['transactionRef'] = ref;
+    map['transferRef'] = ref;
+    map['remarks'] = widget.remarks;
+    map['narration'] = remarks;
+    map['currency'] = currency;
+
+    _firestore
+        .collection("Users")
+        .document(_currentUser.uid)
+        .collection("Transfers")
+        .add(map)
+        .then((snapShot) {
+      _removeDialog();
+      _showConfirmDialog(
+        "Transfer successful",
+        "Amount was transferred successfully",
+      );
+      print("Transfer added successfully");
+    });
+  }
+
+  void _showConfirmDialog(String title, String message) {
+    showDialog<dynamic>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        if (Platform.isAndroid) {
+          return new AlertDialog(
+            title: new Text(
+              title ?? '',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: new SingleChildScrollView(
+              child: new ListBody(
+                children: <Widget>[
+                  new Text(message ?? '',
+                      style: TextStyle(fontSize: 15, fontFamily: 'Montserrat')),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text(
+                  'OK',
+                  style: TextStyle(
+                      color: AppColors.buttonColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => MainDashboard()),
+                      (Route<dynamic> route) => false);
+                },
+              )
+            ],
+          );
+        } else {
+          return new CupertinoAlertDialog(
+            title: Text(
+              title ?? '',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: new SingleChildScrollView(
+              child: new ListBody(
+                children: <Widget>[
+                  new Text(message ?? '',
+                      style: TextStyle(fontSize: 15, fontFamily: 'Montserrat'))
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text(
+                  'OK',
+                  style: TextStyle(
+                      color: AppColors.buttonColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => MainDashboard()),
+                      (Route<dynamic> route) => false);
+                },
+              )
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  void _showFundWalletDialog(String title, String message) {
+    showDialog<dynamic>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        if (Platform.isAndroid) {
+          return new AlertDialog(
+            title: new Text(
+              title ?? '',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: new SingleChildScrollView(
+              child: new ListBody(
+                children: <Widget>[
+                  new Text(message ?? '',
+                      style: TextStyle(fontSize: 15, fontFamily: 'Montserrat')),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text(
+                  'cancel',
+                  style: TextStyle(
+                      color: AppColors.buttonColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  _removeDialog();
+                  _removeDialog();
+                  // Navigator.of(context)
+                  //     .push(new CupertinoPageRoute<bool>(builder: (context) {
+                  //   return FundWallet();
+                  // }));
+                },
+              ),
+              FlatButton(
+                child: new Text(
+                  'OK',
+                  style: TextStyle(
+                      color: AppColors.buttonColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  Navigator.of(context)
+                      .push(new CupertinoPageRoute<bool>(builder: (context) {
+                    return FundWallet();
+                  }));
+                },
+              )
+            ],
+          );
+        } else {
+          return new CupertinoAlertDialog(
+            title: Text(
+              title ?? '',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: new SingleChildScrollView(
+              child: new ListBody(
+                children: <Widget>[
+                  new Text(message ?? '',
+                      style: TextStyle(fontSize: 15, fontFamily: 'Montserrat'))
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text(
+                  'OK',
+                  style: TextStyle(
+                      color: AppColors.buttonColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => MainDashboard()),
+                      (Route<dynamic> route) => false);
+                },
+              )
+            ],
+          );
+        }
+      },
+    );
   }
 
   void _showDialog(String message) {

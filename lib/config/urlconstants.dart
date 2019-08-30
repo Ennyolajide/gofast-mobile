@@ -15,16 +15,31 @@
 
 // alternative
 // marvinified
+// class UrlConstants {
+//   // static String RAVE_BASE_URL = "https://ravesandboxapi.flutterwave.com";
+//   static String RAVE_STAGING_BASE_URL ="https://ravesandboxapi.flutterwave.com";
+//   static String RAVE_BASE_URL = "https://api.ravepay.co";
+//   static String LIVE_PUBLIC_KEY ="FLWPUBK_TEST-d39e908e336397f90b8d6f97894d09a3-X";
+//   static String LIVE_SECRET_KEY ="FLWSECK_TEST-5672b880283d2444c25a886e9e1e286b-X";
+//   static String LIVE_ENCRYPTION_KEY = "FLWSECK_TEST3c4e93bfea64";
+
+//   static String TEST_PUBLIC_KEY ="FLWPUBK_TEST-d39e908e336397f90b8d6f97894d09a3-X";
+//   static String TEST_SECRET_KEY ="FLWSECK_TEST-20138ad74d8d7951f7a786b6cce6e675-X";
+//   static String TEST_ENCRYPTION_KEY = "FLWSECK_TEST3c4e93bfea64";
+//   static String FLUTTERWAVE_REDIRECT_URL = "https://khkcd.sse.codesandbox.io/redirect";
+// }
+// alternative
+// marvinified
 class UrlConstants {
   // static String RAVE_BASE_URL = "https://ravesandboxapi.flutterwave.com";
   static String RAVE_STAGING_BASE_URL ="https://ravesandboxapi.flutterwave.com";
   static String RAVE_BASE_URL = "https://api.ravepay.co";
-  static String LIVE_PUBLIC_KEY ="FLWPUBK_TEST-d39e908e336397f90b8d6f97894d09a3-X";
-  static String LIVE_SECRET_KEY ="FLWSECK_TEST-5672b880283d2444c25a886e9e1e286b-X";
-  static String LIVE_ENCRYPTION_KEY = "FLWSECK_TEST3c4e93bfea64";
+  static String LIVE_PUBLIC_KEY ="FLWPUBK-4744d8ffed34bd6b65345c3615dbe562-X";
+  static String LIVE_SECRET_KEY ="FLWSECK-ede3de6f5fe113842aef7c81a63c6581-X";
+  static String LIVE_ENCRYPTION_KEY = "ede3de6f5fe1c5435985b70d";
 
-  static String TEST_PUBLIC_KEY ="FLWPUBK_TEST-d39e908e336397f90b8d6f97894d09a3-X";
-  static String TEST_SECRET_KEY ="FLWSECK_TEST-20138ad74d8d7951f7a786b6cce6e675-X";
-  static String TEST_ENCRYPTION_KEY = "FLWSECK_TEST3c4e93bfea64";
-  static String FLUTTERWAVE_REDIRECT_URL = "https://khkcd.sse.codesandbox.io/redirect";
+  static String TEST_PUBLIC_KEY ="FLWPUBK-4744d8ffed34bd6b65345c3615dbe562-X";
+  static String TEST_SECRET_KEY ="FLWSECK-ede3de6f5fe113842aef7c81a63c6581-X";
+  static String TEST_ENCRYPTION_KEY = "ede3de6f5fe1c5435985b70d";
+  static String FLUTTERWAVE_REDIRECT_URL = "https://gkbi2.sse.codesandbox.io/redirect";
 }

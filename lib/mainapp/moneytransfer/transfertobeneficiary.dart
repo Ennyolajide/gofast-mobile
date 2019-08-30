@@ -121,7 +121,8 @@ class _TransferToBeneficiaryState extends State<TransferToBeneficiary> {
                               onTap: () {
                                 Navigator.of(context, rootNavigator: false)
                                     .push(CupertinoPageRoute<bool>(
-                                        builder: (BuildContext context) => AddBeneficiaries()));
+                                        builder: (BuildContext context) =>
+                                            AddBeneficiaries()));
                               },
                               child: Padding(
                                 padding: EdgeInsets.all(10.0),
@@ -223,12 +224,12 @@ class _TransferToBeneficiaryState extends State<TransferToBeneficiary> {
     Navigator.of(context, rootNavigator: false).push(
       CupertinoPageRoute<bool>(
         builder: (BuildContext context) => DetailsForbeneficiaryTransfer(
-              accountname: accountname,
-              accountnumber: accountNumber,
-              bankcode: bankCode,
-              bankname: bankname,
-              currency: currency,
-            ),
+          accountname: accountname,
+          accountnumber: accountNumber,
+          bankcode: bankCode,
+          bankname: bankname,
+          currency: currency,
+        ),
       ),
     );
   }

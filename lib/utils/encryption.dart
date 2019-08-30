@@ -12,7 +12,7 @@ class Encryption {
 
   static const String ALGORITHM = "3DES-24";
   static const String _TARGET = "FLWSECK-";
-  static const int _SUB_STRING_LENGTH = 24;
+  static const int _SUB_STRING_LENGTH = 12;
 
   final String secretKey;
 
@@ -22,10 +22,9 @@ class Encryption {
   }
 
   String decryptTransactionPin(String encryptedData) {
-    return BlockCipher(
-      TripleDESEngine(),
-      generateKey(secretKey),
-    ).decodeB64(encryptedData);
+    print(encryptedData);
+    String key = generateKey(secretKey);
+    return BlockCipher(TripleDESEngine(), key).decodeB64(encryptedData);
   }
 
   String encrypt(Map<String, dynamic> data) {
@@ -66,7 +65,7 @@ class Encryption {
       _hash.length,
     );
 
-    return seckey.replaceAll(_TARGET, '').substring(0, _SUB_STRING_LENGTH) +
+    return seckey.replaceAll('FLWSECK-', '').substring(0, _SUB_STRING_LENGTH) +
         _uniqueHash;
   }
 }
