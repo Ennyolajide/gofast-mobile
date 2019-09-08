@@ -16,6 +16,14 @@ import 'package:gofast/utils/utils.dart';
 
 Map<String, dynamic> countrySymbol = {
   "United States": "US",
+  "South Africa": "SA",
+  "Europe": "EUR"
+};
+
+Map<String, dynamic> currencies = {
+  "United States": "USD",
+  "South Africa": "ZAR",
+  "Europe": "EUR"
 };
 
 class TransferUSD extends StatefulWidget {
@@ -207,7 +215,7 @@ class _TransferUSDState extends State<TransferUSD> {
       appBar: AppBar(
         leading: BackButton(color: Colors.white),
         backgroundColor: AppColors.buttonColor,
-        title: Text('Transfer Money to US',
+        title: Text('Transfer Money to Others (USD, ZAR, EURO)',
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 17,
@@ -221,6 +229,7 @@ class _TransferUSDState extends State<TransferUSD> {
               key: _formKey,
               child: ListView(
                 children: <Widget>[
+                  _selectCountrySection(),
                   textField(
                       hintText: "Enter Account Number", label: "Account Number", controller: _accountNumberController),
                   textField(
@@ -370,9 +379,9 @@ class _TransferUSDState extends State<TransferUSD> {
               onChanged: (newValue) {
                 setState(() {
                   _selectedCountry = newValue;
-                  _showIndicator = true;
-                  _bankRetrieved = false;
-                  _getBanks(_selectedCountry);
+                  // _showIndicator = true;
+                  // _bankRetrieved = false;
+                  // _getBanks(_selectedCountry);
                 });
               },
               items: countrySymbol.keys.map((country) {
@@ -609,7 +618,7 @@ class _TransferUSDState extends State<TransferUSD> {
           bankCode: _bankCode,
           // bvn: _bvnController.text,
           meta: meta,
-          currency: _selectedCountry,
+          currency: currencies[_selectedCountry],
           beneficiaryName: _beneficiaryNameController.text,
         ),
       ),

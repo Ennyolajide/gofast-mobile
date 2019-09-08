@@ -18,7 +18,15 @@ Map<String, dynamic> countrySymbol = {
   "Ghana": "GH",
   "Kenya": "KE",
   "Uganda": "UG",
-  "Tanzania": "TZ"
+  "Tanzania": "TZ",
+};
+
+Map<String, dynamic> countryCurrrency = {
+  "Nigeria": "NGN",
+  "Ghana": "GHS",
+  "Kenya": "KES",
+  "Uganda": "UGX",
+  "Tanzania": "TZS"
 };
 
 class TransferMoney extends StatefulWidget {
@@ -612,7 +620,7 @@ class _TransferMoneyState extends State<TransferMoney> {
                   remarks: _remarksController.text,
                   bankCode: _bankCode,
                   // bvn: _bvnController.text,
-                  currency: _selectedCountry,
+                  currency: countryCurrrency[_selectedCountry],
                   beneficiaryName: response.account.accountName,
                 ),
           ),

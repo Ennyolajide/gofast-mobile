@@ -169,7 +169,7 @@ class _ViewTransfersState extends State<ViewTransfers> {
                     ),
                   ),
                   Text(
-                    'N${snapShot['amount']}',
+                    '${snapShot['currency']} ${snapShot['amount']}',
                     style: TextStyle(
                         color: AppColors.onboardingPlaceholderText,
                         fontFamily: 'MontserratBold',

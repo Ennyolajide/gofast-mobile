@@ -17,7 +17,15 @@ Map<String, dynamic> countrySymbol = {
   "Ghana": "GH",
   "Kenya": "KE",
   "Uganda": "UG",
-  "Tanzania": "TZ"
+  "Tanzania": "TZ",
+};
+
+Map<String, dynamic> currencies = {
+  "Nigeria": "NGN",
+  "Ghana": "GHS",
+  "Kenya": "KES",
+  "Uganda": "UGX",
+  "Tanzania": "TZS",
 };
 
 class AddBeneficiaries extends StatefulWidget {
@@ -473,7 +481,7 @@ class _AddBeneficiariesState extends State<AddBeneficiaries> {
     map['accountName'] = accountName;
     map['accountNumber'] = _accountNumberController.text;
     map['bankName'] = _selectedBank;
-    map['currency'] = _selectedCountry;
+    map['currency'] = currencies[_selectedCountry];
     map['bankCode'] = _bankCode;
 
     _firestore
