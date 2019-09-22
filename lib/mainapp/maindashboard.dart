@@ -1225,7 +1225,7 @@ class _MainDashboardState extends State<MainDashboard>
                   ),
                   ListTile(
                     title: Text(
-                      'Transfer Money to Others (USD, ZAR, EURO)',
+                      'Transfer Money to Others (USD, EURO)',
                       style: TextStyle(
                           fontSize: 16,
                           fontFamily: 'Montserrat',

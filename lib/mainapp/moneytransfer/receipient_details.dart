@@ -19,6 +19,7 @@ Map<String, dynamic> countrySymbol = {
   "Kenya": "KE",
   "Uganda": "UG",
   "Tanzania": "TZ",
+  "South Africa": "ZA",
 };
 
 Map<String, dynamic> countryCurrrency = {
@@ -26,7 +27,8 @@ Map<String, dynamic> countryCurrrency = {
   "Ghana": "GHS",
   "Kenya": "KES",
   "Uganda": "UGX",
-  "Tanzania": "TZS"
+  "Tanzania": "TZS",
+  "South Africa": "ZAR",
 };
 
 class TransferMoney extends StatefulWidget {
