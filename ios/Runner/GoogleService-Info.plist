@@ -3,23 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>431656293608-tjvkorakp5f951kutlaueflkhbp3505r.apps.googleusercontent.com</string>
+	<string>775909120883-dnmemf47llthsdf19v68a8cjp05l901b.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.431656293608-tjvkorakp5f951kutlaueflkhbp3505r</string>
-	<key>ANDROID_CLIENT_ID</key>
-	<string>431656293608-bh9036h4hmp1rf54v712cpi7ci2vjrt9.apps.googleusercontent.com</string>
+	<string>com.googleusercontent.apps.775909120883-dnmemf47llthsdf19v68a8cjp05l901b</string>
 	<key>API_KEY</key>
-	<string>AIzaSyAKDCsljzq9VFv8dXofhcAMjY1DzKW__0E</string>
+	<string>AIzaSyBCEK5VOTEDkhmzYN1xnfJfpJPVBTlWS1E</string>
 	<key>GCM_SENDER_ID</key>
-	<string>431656293608</string>
+	<string>775909120883</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.villz.gofast</string>
 	<key>PROJECT_ID</key>
-	<string>gofast-127e8</string>
+	<string>gofast-mobile</string>
 	<key>STORAGE_BUCKET</key>
-	<string>gofast-127e8.appspot.com</string>
+	<string>gofast-mobile.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,8 +29,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:431656293608:ios:f1c615955d7ff5ff</string>
+	<string>1:775909120883:ios:3258ab70e0d878a322c306</string>
 	<key>DATABASE_URL</key>
-	<string>https://gofast-127e8.firebaseio.com</string>
+	<string>https://gofast-mobile.firebaseio.com</string>
 </dict>
 </plist>
