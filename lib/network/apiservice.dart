@@ -32,7 +32,7 @@ class NetworkService {
     print("Send otp request ----> ${request.toMap()}");
 
     String url =
-        "https://2factor.in/API/V1/${request.apiKey}/SMS/${request.phoneNumber}/AUTOGEN/Gofast2";
+        "https://2factor.in/API/V1/${request.apiKey}/SMS/${request.phoneNumber}/AUTOGEN/Gofast OTP";
 
     SendOtpResponse response = new SendOtpResponse();
 

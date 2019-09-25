@@ -12,6 +12,7 @@ import 'package:gofast/mainapp/changeprofileimage.dart';
 import 'package:gofast/mainapp/community/community.dart';
 import 'package:gofast/mainapp/community/services.dart';
 import 'package:gofast/mainapp/fund_wallet/fund_wallet.dart';
+import 'package:gofast/mainapp/kyc.dart';
 import 'package:gofast/mainapp/milestones.dart';
 import 'package:gofast/mainapp/moneytransfer/receipient_details.dart';
 import 'package:gofast/mainapp/moneytransfer/select_account.dart';
@@ -219,10 +220,10 @@ class _MainDashboardState extends State<MainDashboard>
               launchPage: ViewTransfers()),
           _buildListTile('assets/beneficiaries.png', "Beneficiaries List",
               launchPage: Beneficiaries()),
-          _buildListTile('assets/service_profile.png', "Service Profile",
-              launchPage: Preferences.signedUpForCommunity
-                  ? CommunityPage()
-                  : Services()),
+          _buildListTile('assets/service_profile.png', "Verification",
+              launchPage: Preferences.iskycCompleted
+                  ? StartKyc()
+                  : Kyc()),
           _buildListTile('assets/milestones.png', "Milestone",
               launchPage: Milestones()),
           _buildListTile('assets/settings_work_tool.png', "About",
