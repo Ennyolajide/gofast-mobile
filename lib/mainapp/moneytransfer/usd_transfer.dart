@@ -16,13 +16,13 @@ import 'package:gofast/utils/utils.dart';
 
 Map<String, dynamic> countrySymbol = {
   "United States": "US",
-  "South Africa": "SA",
+  //"South Africa": "SA",
   "Europe": "EUR"
 };
 
 Map<String, dynamic> currencies = {
   "United States": "USD",
-  "South Africa": "ZAR",
+  //"South Africa": "ZAR",
   "Europe": "EUR"
 };
 
