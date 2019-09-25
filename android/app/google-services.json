@@ -1,35 +1,42 @@
 {
   "project_info": {
-    "project_number": "775909120883",
-    "firebase_url": "https://gofast-mobile.firebaseio.com",
-    "project_id": "gofast-mobile",
-    "storage_bucket": "gofast-mobile.appspot.com"
+    "project_number": "349923092098",
+    "firebase_url": "https://gofast-mobile-222bc.firebaseio.com",
+    "project_id": "gofast-mobile-222bc",
+    "storage_bucket": "gofast-mobile-222bc.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:775909120883:android:7fffd2d10d779be422c306",
+        "mobilesdk_app_id": "1:349923092098:android:879d125d2671ed7919b69b",
         "android_client_info": {
           "package_name": "com.villz.gofast"
         }
       },
       "oauth_client": [
         {
-          "client_id": "775909120883-a6elhchhollfid4uta1shqjgs8k45la9.apps.googleusercontent.com",
+          "client_id": "349923092098-f50jbqp4g8t8ssoo644d7erjet3c697d.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD1K7xo8POaAxQHo08Umbyj_eCx8DCwP74"
+          "current_key": "AIzaSyDqgTpyfLIJQ9HyAqu-Lcho_Jf2WSETFiU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "775909120883-a6elhchhollfid4uta1shqjgs8k45la9.apps.googleusercontent.com",
+              "client_id": "349923092098-f50jbqp4g8t8ssoo644d7erjet3c697d.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "349923092098-lq8f2lsmqm6vnir31s7lud751qt1944b.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.villz.gofast"
+              }
             }
           ]
         }

@@ -7,6 +7,14 @@ class Preferences {
       prefs.setString("phonenumber", phonenumber);
   static get phoneNumber => prefs.getString("phonenumber") ?? '';
 
+  static set iskycCompleted(bool iskycCompleted) =>
+      prefs.setBool("iskycCompleted", iskycCompleted);
+  static get iskycCompleted => prefs.getBool("iskycCompleted") ?? false;
+
+  static set uploadedKycIdCard(String uploadedKycIdCard) =>
+      prefs.setString("uploadedKycIdCard", uploadedKycIdCard);
+  static get uploadedKycIdCard => prefs.getString("uploadedKycIdCard") ?? '';
+
   static set email(String email) => prefs.setString("email", email);
   static get email => prefs.getString("email") ?? '';
 
