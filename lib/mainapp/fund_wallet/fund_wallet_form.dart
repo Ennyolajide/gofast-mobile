@@ -18,8 +18,6 @@ import 'package:credit_card_number_validator/credit_card_number_validator.dart';
 import 'package:gofast/network/apiservice.dart';
 import 'package:http/http.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-// import 'package:webview_flutter/webview_flutter.dart';
-// import 'package:flutter_inappbrowser/flutter_inappbrowser.dart';
 
 class FundWalletForm extends StatefulWidget {
   @override
@@ -60,7 +58,54 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
     data["user_id"] = _currentUser.uid;
     data["type"] = details["type"];
     data["amount"] = details["amount"];
+    print("Adding Transaction");
+
     _firestore.collection("Transactions").document(details["id"]).setData(data);
+  }
+
+
+  void _updateWallet(txtref) async {
+    print("Loading wallet");
+
+    var _transaction = _firestore
+      .collection("Transactions")
+      .document(txtref);
+
+    _transaction.get()
+      .then((transaction) {
+        if(transaction.exists){
+          Map _tranx = transaction.data;
+          if(_tranx['status'] == 'pending'){
+            print("User : ${_currentUser.uid}");
+            print("Transaction : $_tranx");
+
+            var _myWallet = _firestore
+              .collection("Wallet")
+              .document(_tranx['user_id']);
+            
+            _myWallet.get()
+              .then((wallet) {
+                print("Wallet : ${wallet.data}");
+                Map _wallet = wallet.data;
+                print("Balance : ${_wallet['balance'].runtimeType}");
+                double _amount = double.parse(_tranx['amount']);
+                double _balance = (wallet.exists ? _wallet['balance'] : 0.0).toDouble();
+                double _newBalance = (_balance + _amount);
+                print("Current Balance : $_balance");
+                _myWallet.setData({ 
+                  'currency' : 'NGN',
+                  'balance' : _newBalance,
+                }).then((onValue) {
+                  print("New Balance : $_newBalance");
+                  _transaction.updateData({ 'status' : 'success' });
+                }).catchError((onError){
+                  print("Error : $onError");
+                }); 
+            }); 
+          }
+        } 
+      }); 
+  
   }
 
   void cancelTransaction(id) async {}
@@ -72,29 +117,30 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
     });
 
     try {
-      String txtRef =
-          "MAR_${_cardNumberController.text.trim()}_${DateTime.now()}";
-
+      String txtRef = "MAR_${_cardNumberController.text.trim()}_${DateTime.now().millisecondsSinceEpoch}";
+      print('TranxRef : $txtRef');
       NetworkService networkService = new NetworkService();
-      print("User ${_currentUser.email}");
+      print("User : ${_currentUser.email}");
       Map<String, dynamic> details = Map();
       details["id"] = txtRef;
       details["amount"] = _amountController.text.trim();
       details["type"] = "FUND_WALLET";
       initiateTransaction(details);
-      Response res = await networkService.chargeCard(
-          cardNo: _cardNumberController.text.trim(),
-          cvv: _cvvController.text,
-          expMonth: _expiresController.text.substring(0, 2),
-          expYear: _expiresController.text.substring(3),
-          currency: currency,
-          country: "NG",
-          amount: _amountController.text.trim(),
-          txtRef: txtRef,
-          email: _currentUser.email);
 
-      print("res: ${res.body}");
+      Response res = await networkService.chargeCard(
+        cardNo: _cardNumberController.text.trim(),
+        cvv: _cvvController.text,
+        expMonth: _expiresController.text.substring(0, 2),
+        expYear: _expiresController.text.substring(3),
+        currency: currency,
+        country: "NG",
+        amount: _amountController.text.trim(),
+        txtRef: txtRef,
+        email: _currentUser.email
+      );
+
       dynamic body = json.decode(res.body);
+
       if (body["status"] == "error") {
         setState(() {
           _error = body["message"];
@@ -107,28 +153,33 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
             case "PIN":
               showDialog(
                 context: context,
-                builder: (BuildContext context) =>
-                    PinDialog(next: (pin, setError) async {
-                      print("pin :: $pin");
-                      Response res = await networkService.chargeCard(
-                          cardNo: _cardNumberController.text.trim(),
-                          cvv: _cvvController.text,
-                          expMonth: _expiresController.text.substring(0, 2),
-                          expYear: _expiresController.text.substring(3),
-                          currency: currency,
-                          country: "NG",
-                          pin: pin,
-                          suggested_auth: "PIN",
-                          amount: _amountController.text.trim(),
-                          txtRef: txtRef,
-                          email: _currentUser.email);
+                builder: (BuildContext context) => 
+                  PinDialog(next: (pin, setError) async {
+                    print("pin :: $pin");
 
-                      print("2 ${res.body}");
-                      dynamic body = json.decode(res.body);
-                      if (body["status"] == "error") {
-                        setError(body["message"]);
-                      }
-                      if (body["data"]["chargeResponseCode"] == "00") {
+                    Response res = await networkService.chargeCard(
+                      cardNo: _cardNumberController.text.trim(),
+                      cvv: _cvvController.text,
+                      expMonth: _expiresController.text.substring(0, 2),
+                      expYear: _expiresController.text.substring(3),
+                      currency: currency,
+                      country: "NG",
+                      pin: pin,
+                      suggested_auth: "PIN",
+                      amount: _amountController.text.trim(),
+                      txtRef: txtRef,
+                      email: _currentUser.email
+                    );
+
+                    print("Auth : ${res.body}");//debug
+                    dynamic body = json.decode(res.body);
+
+                    if (body["status"] == "error") {
+                      setError(body["message"]);
+                    }
+
+                    if (body["data"]["chargeResponseCode"] == "00") {
+                        print("Line 191 : ${body['data']}");
                         Navigator.of(context).pop();
                         showDialog(
                             context: context,
@@ -182,10 +233,12 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
                                           ["flwRef"],
                                       otp: otp,
                                     );
-
                                     dynamic data = json.decode(otpRes.body);
+                                    print("Response : ${data['data']['tx']['txRef']}");
                                     if (data["data"]["data"]["responsecode"] ==
                                         "00") {
+                                      String _txRef = data['data']['tx']['txRef'];
+                                      _updateWallet(_txRef);                                     
                                       Navigator.of(context).pop();
                                       showDialog(
                                           context: context,
@@ -212,8 +265,7 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
                                                         Navigator.of(context,
                                                                 rootNavigator:
                                                                     false)
-                                                            .push(CupertinoPageRoute<
-                                                                    bool>(
+                                                            .push(CupertinoPageRoute<bool>(
                                                                 builder: (BuildContext
                                                                         context) =>
                                                                     MainDashboard()));
@@ -305,11 +357,13 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
                             txtRef: txtRef,
                             email: _currentUser.email);
 
-                        print("2 ${res.body}");
+                        //print("2 ${res.body}");
                         dynamic body = json.decode(res.body);
+                        print("Response (NOAUTH_INTERNATION) : ${body['data']}");
                         if (body["status"] == "error") {
                           setError(body["message"]);
                         }
+                        
                         if (body["data"]["chargeResponseCode"] == "00") {
                           Navigator.of(context).pop();
                           showDialog(
@@ -408,8 +462,8 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
                               InkWell(
                                 child: Icon(Icons.refresh),
                                 onTap: () {
-                                  flutterWebviewPlugin
-                                      .reloadUrl(body["data"]["authurl"]);
+                                  print(body['data']['authurl']);
+                                  flutterWebviewPlugin.reloadUrl(body["data"]["authurl"]);
                                   // flutterWebviewPlugin.reloadUrl("any link");
                                 },
                               ),
@@ -424,7 +478,7 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
                           ),
                         )),
               );
-              // flutterWebviewPlugin.launch(body["data"]["authurl"],);
+              //flutterWebviewPlugin.launch(body["data"]["authurl"],);
               break;
             case "ACCESS_OTP":
               showDialog(
@@ -438,6 +492,9 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
 
                           dynamic data = json.decode(otpRes.body);
                           if (data["data"]["data"]["responsecode"] == "00") {
+                            print("Response(VBVSECURECODE : ACCESS_OTP) : ${data['data']}");
+                            String _txRef = data['data']['tx']['txRef'];
+                            _updateWallet(_txRef);  
                             Navigator.of(context).pop();
                             showDialog(
                                 context: context,
@@ -545,10 +602,10 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
       if (user != null) {
         setState(() {
           _currentUser = user;
-          _uidLoaded = true;
+          _uidLoaded = true;      
         });
       }
-    });
+    });//.then((user) => _updateWallet('MAR_4658587725290061_1571699353516'));
   }
 
   @override
@@ -557,13 +614,14 @@ class _FundWalletFormFormState extends State<FundWalletForm> {
     _getCurrentUser();
     _onUrlChanged = flutterWebviewPlugin.onUrlChanged.listen((String url) {
       if (mounted) {
-        print("url: $url");
+        //print("url: $url");
         if (url.contains(UrlConstants.FLUTTERWAVE_REDIRECT_URL)) {
           Uri uri = Uri.parse(url);
           Map params = uri.queryParameters;
-
+          var x = params['response'];
           print("-----------------------------------------------------");
-          print(params["response"]);
+          print(x);
+          print(UrlConstants.FLUTTERWAVE_REDIRECT_URL);
           print("-----------------------------------------------------");
 
           String response = params["response"];

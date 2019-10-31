@@ -85,6 +85,8 @@ PODS:
     - FirebaseCore (~> 5.1)
     - GTMSessionFetcher/Core (~> 1.1)
   - Flutter (1.0.0)
+  - flutter_plugin_pdf_viewer (1.0.5):
+    - Flutter
   - flutter_sound (0.0.1):
     - Flutter
   - flutter_statusbarcolor (0.0.1):
@@ -161,6 +163,7 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
+  - flutter_plugin_pdf_viewer (from `.symlinks/plugins/flutter_plugin_pdf_viewer/ios`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
   - flutter_statusbarcolor (from `.symlinks/plugins/flutter_statusbarcolor/ios`)
   - flutter_webview_plugin (from `.symlinks/plugins/flutter_webview_plugin/ios`)
@@ -205,6 +208,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_storage/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
+  flutter_plugin_pdf_viewer:
+    :path: ".symlinks/plugins/flutter_plugin_pdf_viewer/ios"
   flutter_sound:
     :path: ".symlinks/plugins/flutter_sound/ios"
   flutter_statusbarcolor:
@@ -239,6 +244,7 @@ SPEC CHECKSUMS:
   FirebaseInstanceID: e2fa4cb35ef5558c200f7f0ad8a53e212215f93e
   FirebaseStorage: 3d22c041370593e639fba013d1eb698a8dae2881
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  flutter_plugin_pdf_viewer: 7d8e3a03f42d346b2af8840f980b7de95ad5732a
   flutter_sound: 0e8163ceac1e00eb6d894e2ae4641ba726a2c479
   flutter_statusbarcolor: 8afb1071ed8c58be929f1e32b36c629771fd2259
   flutter_webview_plugin: ed9e8a6a96baf0c867e90e1bce2673913eeac694

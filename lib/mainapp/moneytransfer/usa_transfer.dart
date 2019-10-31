@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gofast/config/urlconstants.dart';
+import 'package:gofast/mainapp/components/form_components.dart';
 import 'package:gofast/mainapp/moneytransfer/verifytransactionpin.dart';
 import 'package:gofast/network/apiservice.dart';
 import 'package:gofast/network/request/addaccountrequest.dart';
@@ -14,38 +15,34 @@ import 'package:gofast/utils/colors.dart';
 import 'package:gofast/utils/utils.dart';
 
 Map<String, dynamic> countrySymbol = {
-  "Nigeria": "NG",
-  "Ghana": "GH",
-  "Kenya": "KE",
-  "Uganda": "UG",
-  "Tanzania": "TZ",
-  "South Africa": "ZA",
+  "United States": "US"
 };
 
-Map<String, dynamic> countryCurrrency = {
-  "Nigeria": "NGN",
-  "Ghana": "GHS",
-  "Kenya": "KES",
-  "Uganda": "UGX",
-  "Tanzania": "TZS",
-  "South Africa": "ZAR",
+Map<String, dynamic> currencies = {
+  "United States": "USD"
 };
 
-class TransferMoney extends StatefulWidget {
+class TransferUSD extends StatefulWidget {
   @override
-  _TransferMoneyState createState() => _TransferMoneyState();
+  _TransferUSDState createState() => _TransferUSDState();
 }
 
-class _TransferMoneyState extends State<TransferMoney> {
+class _TransferUSDState extends State<TransferUSD> {
   var _selectedBank;
   bool _autoValidate = false;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = new GlobalKey<FormState>();
+
   final _accountNumberController = TextEditingController();
-  // TextEditingController _bvnController = new TextEditingController();
+  final _routingNumberController = TextEditingController();
+  final _swiftCodeController = TextEditingController();
+  final _bankNameController = TextEditingController();
   final _amountController = TextEditingController();
   final _remarksController = TextEditingController();
-  String _selectedCountry = "Nigeria";
+  final _beneficiaryAddressController = TextEditingController();
+  final _beneficiaryNameController = TextEditingController();
+
+  String _selectedCountry = "United States";
   bool _bankRetrieved = false;
   bool _showIndicator = true;
   List<Bank> _bankList;
@@ -58,21 +55,19 @@ class _TransferMoneyState extends State<TransferMoney> {
   String _bankCode;
   double _charge = 0.0;
   double _dollarToNaira = 0.0;
-  double _percentageCharge = 0.0;
   double _countryTranxCharge = 0.0;
   Map<String, dynamic> _charges; 
-  
 
-  _TransferMoneyState() {
+  _TransferUSDState() {
     _amountController.addListener(() {
       String amountText =
           _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
 
-      if (_amountController.text.isNotEmpty && double.parse(amountText) >= 100) {
-          setState(() {
-            _charge =  _countryTranxCharge + (_percentageCharge/100 * double.parse(amountText));
-          });
-          print("Charge : -> ${_charge.runtimeType}");
+      if (_amountController.text.isNotEmpty &&
+          double.parse(amountText) >= 100) {
+        setState(() {
+          _charge =  _countryTranxCharge;
+        });
       } else {
         setState(() {
           _charge = 0.0;
@@ -83,7 +78,7 @@ class _TransferMoneyState extends State<TransferMoney> {
 
   @override
   void initState() {
-    _getBanks("Nigeria");
+    //_getBanks("United States");
     _initPreferences();
     _getFirebaseUser();
     _loadCharges();
@@ -103,53 +98,26 @@ class _TransferMoneyState extends State<TransferMoney> {
     });
   }
 
-
-
   void _loadCharges() async {
     print("Loading Charges");
 
     _charges = {
-      "Nigeria": { 
-        //Default currency
-        "charge" : 50, "currency" : "NGN", "percentageCharge" : 0,
-      },
-      "Ghana": {
-        //GHS 20 -> USD 3.63
-        "charge" : 4, "currency" : "USD", "percentageCharge" : 2,
-      },
-      "Kenya": {
-        //KES 250 -> USD 2.42
-        "charge" : 2.5, "currency" : "USD", "percentageCharge" : 2,
-      },
-      "Uganda": {
-        //UGX 11400 -> USD 3.07
-        "charge" : 3.1, "currency" : "USD", "percentageCharge" : 2,
-      },
-      "Tanzania": {
-        //Tsh 7100 -> USD 3.08
-        "charge" : 3.1, "currency" : "USD", "percentageCharge" : 2,
-      },
-      "South Africa": {
-        // -> USD 4.5
-        "charge" : 4.5, "currency" : "USD", "percentageCharge" : 2,
+      "United States": {
+        "charge" : 5, "currency" : "USD"
       }
     };
     setState(() {
       _dollarToNaira = 362;
     });
-    
   }
 
   void _getTranxCharge(String countryName){
     Map<String, dynamic> tranxCharge = _charges[countryName];
-    var _pecentCharge = tranxCharge['percentageCharge'];
     var _fee = tranxCharge['currency'] == "NGN" ? tranxCharge['charge'] : tranxCharge['charge'] * _dollarToNaira;
     setState(() {
       _countryTranxCharge = _fee.toDouble();
-      _percentageCharge = _pecentCharge.toDouble();
     });
   }
-
 
   void _getBanks(String bankName) {
     NetworkService _networkService = new NetworkService();
@@ -216,7 +184,7 @@ class _TransferMoneyState extends State<TransferMoney> {
                     setState(() {
                       _showIndicator = true;
                     });
-                    _getBanks("Nigeria");
+                    //_getBanks("United States");
                   },
                 ),
               ]);
@@ -225,7 +193,9 @@ class _TransferMoneyState extends State<TransferMoney> {
               title: Text(title ?? ''),
               content: new SingleChildScrollView(
                 child: new ListBody(
-                  children: <Widget>[new Text(message ?? '')],
+                  children: <Widget>[
+                    Text(message ?? '')
+                  ],
                 ),
               ),
               actions: <Widget>[
@@ -243,7 +213,7 @@ class _TransferMoneyState extends State<TransferMoney> {
                     setState(() {
                       _showIndicator = true;
                     });
-                    _getBanks("Nigeria");
+                    //_getBanks("United States");
                   },
                 ),
               ]);
@@ -268,7 +238,7 @@ class _TransferMoneyState extends State<TransferMoney> {
       appBar: AppBar(
         leading: BackButton(color: Colors.white),
         backgroundColor: AppColors.buttonColor,
-        title: Text('Transfer Money',
+        title: Text('Transfer Money to USD ',
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 17,
@@ -276,47 +246,35 @@ class _TransferMoneyState extends State<TransferMoney> {
       ),
       body: Stack(
         children: <Widget>[
-          _showIndicator
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.buttonColor),
-                      ),
-                      SizedBox(height: 7),
-                      Text(
-                        'Retrieving banks',
-                        style: TextStyle(
-                            color: AppColors.buttonColor,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  ),
-                )
-              : SizedBox(),
-          _bankRetrieved
-              ? Container(
-                  margin: EdgeInsets.symmetric(horizontal: 18),
-                  child: Form(
-                    key: _formKey,
-                    child: ListView(
-                      children: <Widget>[
-                        _buildAccountNumberContainer(),
-                        _selectCountrySection(),
-                        _buildBankSelection(),
-                        // _buildBvnContainer(),
-                        _buildServiceFeeCharge(),
-                        _buildAmountEntry(),
-                        _buildTransferReasonEntry(),
-                        _buildNextButton()
-                      ],
-                    ),
-                  ),
-                )
-              : SizedBox()
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 18),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: <Widget>[
+                  //_selectCountrySection(),
+                  textField(
+                      hintText: "Enter Account Number", label: "Account Number", controller: _accountNumberController),
+                  textField(
+                      hintText: "Enter Account Name", label: "Account Name", controller: _beneficiaryNameController),
+                  /*
+                  textField(hintText: "Enter Bank Name", label: "Bank Name", controller: _bankNameController), */
+                  textField(
+                      hintText: "Enter Routing Number",
+                      label: "Routing Number", controller: _routingNumberController),
+                  /* textField(hintText: "Enter Swift Code", label: "Swift Code", controller: _swiftCodeController), */
+                  textField(
+                      hintText: "Enter Recipient Address",
+                      label: "Recipient Address", controller: _beneficiaryAddressController),
+
+                  _buildServiceFeeCharge(),
+                  _buildAmountEntry(),
+                  _buildTransferReasonEntry(),
+                  _buildNextButton()
+                ],
+              ),
+            ),
+          )
         ],
       ),
     ));
@@ -325,11 +283,14 @@ class _TransferMoneyState extends State<TransferMoney> {
   Widget _buildServiceFeeCharge() {
     return Container(
       margin: EdgeInsets.only(top: 20, bottom: 15),
-      child: Text('Service fee: ${_charge.toStringAsFixed(2)}',
-          style: TextStyle(
-              color: AppColors.onboardingPlaceholderText,
-              fontSize: 17,
-              fontFamily: 'MontserratSemiBold')),
+      child: Text(
+        'Service fee: ${_charge.toStringAsFixed(2)}',
+        style: TextStyle(
+          color: AppColors.onboardingPlaceholderText,
+          fontSize: 17,
+          fontFamily: 'MontserratSemiBold'
+        )
+      ),
     );
   }
 
@@ -341,11 +302,13 @@ class _TransferMoneyState extends State<TransferMoney> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Enter receiver account number',
-              style: TextStyle(
-                  color: AppColors.onboardingPlaceholderText,
-                  fontSize: 17,
-                  fontFamily: 'MontserratSemiBold')),
+          Text('Enter Account number',
+            style: TextStyle(
+              color: AppColors.onboardingPlaceholderText,
+              fontSize: 17,
+              fontFamily: 'MontserratSemiBold'
+            )
+          ),
           SizedBox(height: screenAwareSize(5, context)),
           TextFormField(
             keyboardType: TextInputType.number,
@@ -424,7 +387,7 @@ class _TransferMoneyState extends State<TransferMoney> {
     );
   }
 
-  Widget _selectCountrySection() {
+  /* Widget _selectCountrySection() {
     return Container(
       margin: EdgeInsets.only(top: screenAwareSize(30, context)),
       child: Column(
@@ -451,8 +414,6 @@ class _TransferMoneyState extends State<TransferMoney> {
                   _getBanks(_selectedCountry);
                   _getTranxCharge(_selectedCountry);
                 });
-                print('Country : $_selectedCountry');
-                print('Charge : $_charge');
               },
               items: countrySymbol.keys.map((country) {
                 return DropdownMenuItem(
@@ -465,9 +426,9 @@ class _TransferMoneyState extends State<TransferMoney> {
         ],
       ),
     );
-  }
+  } */
 
-  Widget _buildBankSelection() {
+  /* Widget _buildBankSelection() {
     return Container(
         margin: EdgeInsets.only(top: screenAwareSize(30, context)),
         child: Column(
@@ -505,8 +466,8 @@ class _TransferMoneyState extends State<TransferMoney> {
             )
           ],
         ));
-  }
-
+  }*/
+ 
   Widget _buildAmountEntry() {
     return Container(
       margin: EdgeInsets.only(
@@ -545,10 +506,10 @@ class _TransferMoneyState extends State<TransferMoney> {
                       val.trim().replaceAll(",", "").replaceAll("-", "")) <
                   100.0) {
                 return 'Amount must be at least 100 naira';
-              } else if (double.parse(
+              } else if(double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) >
-                  100000.0) {
-                return 'Amount must not be more than 100,000 naira';
+                  1000000.0) {
+                return 'Amount cannot be more than 1000000 naira';
               }
             },
             autovalidate: _autoValidate,
@@ -654,60 +615,69 @@ class _TransferMoneyState extends State<TransferMoney> {
   }
 
   void _verifyAccount() {
-    print("selected bank code is ---> $_bankCode");
+    print("selected bank code is ---> ${_bankCode}");
     NetworkService service = NetworkService();
-    AddAccountRequest accountRequest =
-        new AddAccountRequest(_accountNumberController.text.trim(), _bankCode);
+    // AddAccountRequest accountRequest =
+    //     new AddAccountRequest(_accountNumberController.text.trim(), _bankCode);
 
-    service.addAccount(accountRequest).then((response) {
-      if (response.responseCode == "00" && response.status == "success") {
-        _removeDialog();
+    // service.addAccount(accountRequest).then((response) {
+    //   if (response.responseCode == "00" && response.status == "success") {
+    //     _removeDialog();
 
-        String amountText = _amountController.text
-            .trim()
-            .replaceAll(",", "")
-            .replaceAll("-", "");
+    String amountText =
+        _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
 
-        double amountEntered = double.parse(amountText);
+    double amountEntered = double.parse(amountText);
 
-        double finalAmountCharge = _charge + amountEntered;
-        print("final amount charge is ->> $finalAmountCharge");
-        print("final final amount to transfer --> $amountEntered");
+    double finalAmountCharge = _charge + amountEntered;
+    Map<String, dynamic> meta = new Map();
 
-        Navigator.of(context, rootNavigator: false).push(
-          CupertinoPageRoute<bool>(
-            builder: (BuildContext context) => TransactionPinVerification(
-                  accountNumber: _accountNumberController.text,
-                  amount: "$finalAmountCharge",
-                  transferAmount: amountEntered.toString(),
-                  remarks: _remarksController.text,
-                  bankCode: _bankCode,
-                  // bvn: _bvnController.text,
-                  currency: countryCurrrency[_selectedCountry],
-                  beneficiaryName: response.account.accountName,
-                ),
-          ),
-        );
+    meta["AccountNumber"] = _accountNumberController.text.trim();
+    meta["RoutingNumber"] = _routingNumberController.text.trim();
+    meta["SwiftCode"] = _swiftCodeController.text.trim();
+    meta["BankName"] = _bankNameController.text.trim();
+    meta["BeneficiaryName"] = _beneficiaryNameController.text.trim();
+    meta["BeneficiaryAddress"] = _beneficiaryAddressController.text.trim();
+    meta["BeneficiaryCountry"] = "US";
+
+    print("final amount charge is ->> ${finalAmountCharge}");
+    print("final final amount to transfer --> ${amountEntered}");
+
+    Navigator.of(context, rootNavigator: false).push(
+      CupertinoPageRoute<bool>(
+        builder: (BuildContext context) => TransactionPinVerification(
+          accountNumber: _accountNumberController.text,
+          amount: "$finalAmountCharge",
+          transferAmount: amountEntered.toString(),
+          remarks: _remarksController.text,
+          bankCode: _bankCode,
+          // bvn: _bvnController.text,
+          meta: meta,
+          currency: currencies[_selectedCountry],
+          beneficiaryName: _beneficiaryNameController.text,
+        ),
+      ),
+    );
 //        _accountNumberController.clear();
 //        _amountController.clear();
 //        _remarksController.clear();
-        setState(() {
-          _autoValidate = false;
-        });
-        print("Account verified successfully");
-      } else {
-        _removeDialog();
-        Utils.showErrorDialog(
-          context,
-          "Error!",
-          response.responseMessage,
-        );
-      }
-    }).catchError((e) {
-      //if it crashes
-      _removeDialog();
-      Utils.showErrorDialog(context, "Error", "An error occured, try again");
+    setState(() {
+      _autoValidate = false;
     });
+    print("Account verified successfully");
+    //   } else {
+    //     _removeDialog();
+    //     Utils.showErrorDialog(
+    //       context,
+    //       "Error!",
+    //       response.responseMessage,
+    //     );
+    //   }
+    // }).catchError((e) {
+    //   //if it crashes
+    //   _removeDialog();
+    //   Utils.showErrorDialog(context, "Error", "An error occured, try again");
+    // });
   }
 
   void _removeDialog() {

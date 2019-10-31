@@ -306,6 +306,7 @@ class _NameEntryState extends State<NameEntry> {
       userData['phoneNumber'] = Preferences.phoneNumber;
       userData['userId'] = _currentUser.uid;
       userData['deviceId'] = Preferences.deviceId;
+      userData['isAccountVerified'] = false;
       userData['DOB'] = Preferences.dob;
       userData['ProfilePicture'] = "";
       userData['signedUpForCommunity'] = false;

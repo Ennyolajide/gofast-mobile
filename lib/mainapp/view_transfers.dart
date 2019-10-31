@@ -205,7 +205,7 @@ class _ViewTransfersState extends State<ViewTransfers> {
               accountNubmer: accountNumber,
               amount: amount,
               remarks: remarks,
-              bankName: accountName,
+              bankName: bankName,
               time: _dateFormat.format(DateTime.parse(time)),
             ),
       ),

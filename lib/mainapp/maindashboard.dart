@@ -14,10 +14,12 @@ import 'package:gofast/mainapp/community/services.dart';
 import 'package:gofast/mainapp/fund_wallet/fund_wallet.dart';
 import 'package:gofast/mainapp/kyc.dart';
 import 'package:gofast/mainapp/milestones.dart';
+import 'package:gofast/mainapp/moneytransfer/europe_transfer.dart';
 import 'package:gofast/mainapp/moneytransfer/receipient_details.dart';
 import 'package:gofast/mainapp/moneytransfer/select_account.dart';
 import 'package:gofast/mainapp/moneytransfer/transfertobeneficiary.dart';
-import 'package:gofast/mainapp/moneytransfer/usd_transfer.dart';
+import 'package:gofast/mainapp/moneytransfer/usa_transfer.dart';
+import 'package:gofast/mainapp/privacy.dart';
 import 'package:gofast/mainapp/settings.dart';
 import 'package:gofast/mainapp/transfer/new_transfer.dart';
 import 'package:gofast/mainapp/updateProfile.dart';
@@ -55,9 +57,7 @@ class _MainDashboardState extends State<MainDashboard>
 
   void _loadWallet() async {
     print("Loading wallet");
-    // setState(() {
-    //   loadingWallet = true;
-    // });
+    
     if (_uidLoaded) {
       DocumentSnapshot w = await _firestore
           .collection("Wallet")
@@ -74,9 +74,6 @@ class _MainDashboardState extends State<MainDashboard>
       }
     }
 
-    // setState(() {
-    //   loadingWallet = false;
-    // });
   }
 
   void _getCurrentUser() {
@@ -93,6 +90,7 @@ class _MainDashboardState extends State<MainDashboard>
 
   void _initPreferences() {
     Preferences.init().then((prefs) {});
+     
   }
 
   @override
@@ -212,8 +210,8 @@ class _MainDashboardState extends State<MainDashboard>
                   )
                 ],
               )),
-          _buildListTile('assets/user.png', "My Account",
-              launchPage: MyAccount()),
+         /*  _buildListTile('assets/user.png', "My Account",
+              launchPage: MyAccount()), */
           _buildListTile('assets/transfer_funds.png', "Transfer Funds",
               onTap: _showSelectionDialog),
           _buildListTile('assets/transfer.png', "My Transfers",
@@ -226,6 +224,8 @@ class _MainDashboardState extends State<MainDashboard>
                   : Kyc()),
           _buildListTile('assets/milestones.png', "Milestone",
               launchPage: Milestones()),
+          _buildListTile('assets/milestones.png', "Term & Privary",
+              launchPage: Privacy()),
           _buildListTile('assets/settings_work_tool.png', "About",
               launchPage: Settings()),
           _buildContactUsTile('assets/phone_contact.png', "Contact Us"),
@@ -239,10 +239,10 @@ class _MainDashboardState extends State<MainDashboard>
     return ListTile(
       onTap: () {
         String email = CONFIG.SUPPORT_EMAIL;
-        canLaunch("mailto:${email}").then(
+        canLaunch("mailto:$email").then(
           (canlaunch) {
             if (canlaunch) {
-              launch('mailto:${email}');
+              launch('mailto:$email');
             }
           },
         );
@@ -511,6 +511,7 @@ class _MainDashboardState extends State<MainDashboard>
   }
 
   Widget _buildAccountSlides({bool loading, Map data}) {
+    
     if (loading) {
       return Center(
           child: Container(
@@ -540,7 +541,7 @@ class _MainDashboardState extends State<MainDashboard>
                     fontWeight: FontWeight.normal),
               ),
               Text(
-                '${data["currency"] != null ? data["currency"] : "NGN"} ${data["balance"] != null ? data["balance"] : "0.0"}',
+                '${data["currency"] != null ? data["currency"] : "NGN"} ${data["balance"] != null ? double.parse(data["balance"]).toStringAsFixed(2) : "0.0"}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: AppColors.buttonColor,
@@ -570,6 +571,7 @@ class _MainDashboardState extends State<MainDashboard>
   }
 
   Widget _buildAccountContent(AsyncSnapshot snapshot) {
+    
     _accountTabController =
         TabController(length: snapshot.data.documents.length, vsync: this);
 
@@ -1050,11 +1052,12 @@ class _MainDashboardState extends State<MainDashboard>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
-                                Text('Transfer to ${key['accountName']}',
+                                Text('${key['accountName']}',
                                     style: TextStyle(
                                         color: AppColors
                                             .transferHistoryItemTextColor,
-                                        fontSize: 14)),
+                                        fontSize: 14)
+                                ),
                                 Text(
                                   'N ${key['amount']}',
                                   style: TextStyle(
@@ -1062,7 +1065,7 @@ class _MainDashboardState extends State<MainDashboard>
                                           AppColors.onboardingPlaceholderText,
                                       fontSize: 17,
                                       fontWeight: FontWeight.bold),
-                                )
+                                  ),
                               ],
                             ),
                           ),
@@ -1180,24 +1183,25 @@ class _MainDashboardState extends State<MainDashboard>
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
-        if (Platform.isAndroid) {
-          return new AlertDialog(
-            title: new Text(
-              'Select option',
+        if (true){//Platform.isAndroid) {
+          return AlertDialog(
+            title: Text(
+              'Transfer to',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            content: new SingleChildScrollView(
-              child: new ListBody(
+            content: SingleChildScrollView(
+              child: ListBody(
                 children: <Widget>[
                   ListTile(
                     title: Text(
-                      'Single transfer',
+                      'African Countries',
                       style: TextStyle(
                           fontSize: 16,
                           fontFamily: 'Montserrat',
                           fontWeight: FontWeight.bold),
                     ),
                     onTap: () {
+                      
                       Navigator.pop(context);
                       Navigator.of(context, rootNavigator: false).push(
                         CupertinoPageRoute<bool>(
@@ -1206,9 +1210,30 @@ class _MainDashboardState extends State<MainDashboard>
                       );
                     },
                   ),
+                         
                   ListTile(
                     title: Text(
-                      'Transfer to beneficiary',
+                      'Worldwide',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    onTap: () {
+                      _showWordwideTransferDialog();
+                      /* Navigator.pop(context);
+                      Navigator.of(context, rootNavigator: false).push(
+                        CupertinoPageRoute<bool>(
+                          builder: (BuildContext context) =>
+                              TransferUSD(),
+                        ),
+                      ); */
+                    },
+                  ),
+                  ListTile(
+                    title: Text(
+                      'Beneficiary',
                       style: TextStyle(
                           fontSize: 16,
                           fontFamily: 'Montserrat',
@@ -1224,32 +1249,14 @@ class _MainDashboardState extends State<MainDashboard>
                       );
                     },
                   ),
-                  ListTile(
-                    title: Text(
-                      'Transfer Money to Others (USD, EURO)',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.bold),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.of(context, rootNavigator: false).push(
-                        CupertinoPageRoute<bool>(
-                          builder: (BuildContext context) =>
-                              TransferUSD(),
-                        ),
-                      );
-                    },
-                  )
                 ],
               ),
             ),
           );
         } else {
-          return new CupertinoAlertDialog(
+          return CupertinoAlertDialog(
               title: Text(
-                'Select option',
+                'Transfer to',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               content: new SingleChildScrollView(
@@ -1257,11 +1264,12 @@ class _MainDashboardState extends State<MainDashboard>
                   children: <Widget>[
                     ListTile(
                       title: Text(
-                        'Single transfer',
+                        'African Countries',
                         style: TextStyle(
-                            fontSize: 16,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.bold
+                        ),
                       ),
                       onTap: () {
                         Navigator.pop(context);
@@ -1274,7 +1282,25 @@ class _MainDashboardState extends State<MainDashboard>
                     ),
                     ListTile(
                       title: Text(
-                        'Transfer to beneficiary',
+                        'Worldwide Transfer',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () {
+                        _showWordwideTransferDialog();
+                        /* Navigator.pop(context);
+                        Navigator.of(context, rootNavigator: false).push(
+                          CupertinoPageRoute<bool>(
+                            builder: (BuildContext context) => _showWordwideTransferDialog(),
+                          ),
+                        ); */
+                      },
+                    ),
+                    ListTile(
+                      title: Text(
+                        'Beneficiary',
                         style: TextStyle(
                             fontSize: 16,
                             fontFamily: 'Montserrat',
@@ -1286,6 +1312,149 @@ class _MainDashboardState extends State<MainDashboard>
                           CupertinoPageRoute<bool>(
                             builder: (BuildContext context) =>
                                 TransferToBeneficiary(),
+                          ),
+                        );
+                      },
+                    )
+                  ],
+                ),
+              ));
+        }
+      },
+    );
+  }
+
+
+
+
+  void _showWordwideTransferDialog() {
+    showDialog<dynamic>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        if (true){//Platform.isAndroid) {
+          return new AlertDialog(
+            title: new Text(
+              'Transfer to',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: new SingleChildScrollView(
+              child: new ListBody(
+                children: <Widget>[
+                  ListTile(
+                    title: Text(
+                      'USA',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context, rootNavigator: false).push(
+                        CupertinoPageRoute<bool>(
+                          builder: (BuildContext context) => TransferUSD(),
+                        ),
+                      );
+                    },
+                  ),
+                         
+                  ListTile(
+                    title: Text(
+                      'Europe',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context, rootNavigator: false).push(
+                        CupertinoPageRoute<bool>(
+                          builder: (BuildContext context) => TransferEurope(),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text(
+                      'African Countries',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context, rootNavigator: false).push(
+                        CupertinoPageRoute<bool>(
+                          builder: (BuildContext context) =>  TransferMoney(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else {
+          return new CupertinoAlertDialog(
+              title: Text(
+                'Transfer to',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: new SingleChildScrollView(
+                child: new ListBody(
+                  children: <Widget>[
+                    ListTile(
+                      title: Text(
+                        'USA',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.bold
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context, rootNavigator: false).push(
+                          CupertinoPageRoute<bool>(
+                            builder: (BuildContext context) => TransferUSD(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      title: Text(
+                        'Worldwide Transfer',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context, rootNavigator: false).push(
+                          CupertinoPageRoute<bool>(
+                            builder: (BuildContext context) => TransferEurope(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      title: Text(
+                        'African Countries',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context, rootNavigator: false).push(
+                          CupertinoPageRoute<bool>(
+                            builder: (BuildContext context) => TransferMoney(),
                           ),
                         );
                       },

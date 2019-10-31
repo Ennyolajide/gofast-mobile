@@ -394,8 +394,8 @@ class NetworkService {
               // "IP": ip,
               "txRef": txtRef, // your unique merchant reference
               // "meta": new Map([{ metaname: "flightID", metavalue: "123949494DC"}]),
-              "redirect_url":
-                  "https://rave-webhook.herokuapp.com/receivepayment",
+              "redirect_url": UrlConstants.FLUTTERWAVE_REDIRECT_URL
+                  //"https://rave-webhook.herokuapp.com/receivepayment",
               // "device_fingerprint": "69e6b7f0b72037aa8428b70fbe03986c"
             };
             break;
@@ -420,8 +420,8 @@ class NetworkService {
               "billingcountry": billingcountry,
               "txRef": txtRef, // your unique merchant reference
               // "meta": new Map([{ metaname: "flightID", metavalue: "123949494DC"}]),
-              "redirect_url":
-                  "https://rave-webhook.herokuapp.com/receivepayment",
+              "redirect_url": UrlConstants.FLUTTERWAVE_REDIRECT_URL,
+                  //"https://rave-webhook.herokuapp.com/receivepayment",
               // "device_fingerprint": "69e6b7f0b72037aa8428b70fbe03986c"
             };
             break;

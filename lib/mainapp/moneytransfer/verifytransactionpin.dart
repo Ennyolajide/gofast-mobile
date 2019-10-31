@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gofast/config/urlconstants.dart';
 import 'package:gofast/mainapp/fund_wallet/fund_wallet.dart';
+import 'package:gofast/mainapp/kyc.dart';
 import 'package:gofast/mainapp/maindashboard.dart';
 import 'package:gofast/mainapp/moneytransfer/select_account.dart';
 import 'package:gofast/network/apiservice.dart';
@@ -56,6 +57,9 @@ class _TransactionPinVerificationState
   bool _loadTransfer = false;
   bool loadingWallet = false;
   Map wallet = new Map();
+  Map user = new Map();
+  bool _isAccountVerified = false;
+
 
   @override
   void initState() {
@@ -93,6 +97,7 @@ class _TransactionPinVerificationState
     _mAuth.currentUser().then((user) {
       if (user != null) {
         _currentUser = user;
+        print('User : $user');
         _loadWallet();
       }
     });
@@ -236,6 +241,8 @@ class _TransactionPinVerificationState
               .get()
               .then((snapShot) {
             String onlineUserId = snapShot.data['deviceId'];
+            _isAccountVerified = snapShot.data['isAccountVerified'];
+           
             if (onlineUserId == Preferences.deviceId) {
               Encryption encryption =
                   new Encryption(secretKey: UrlConstants.LIVE_SECRET_KEY);
@@ -245,6 +252,8 @@ class _TransactionPinVerificationState
                   .get()
                   .then((snapShot) {
                 print(snapShot.data);
+                
+                
                 if (_pinController.text.trim() ==
                     encryption.decryptTransactionPin(
                         snapShot.data['transactionPin'])) {
@@ -280,6 +289,12 @@ class _TransactionPinVerificationState
   void _initiateTransfer() async {
     _showDialog("Initiating Transfer...");
     print("wal: $wallet");
+
+    if(_isAccountVerified == false){
+      _showKycDialog("Account not verified", "Please verify your account with a valid ID");
+      return;
+    }
+
     if (wallet["balance"] == null) {
       _showFundWalletDialog("You haven't Funded your wallet",
           " Fund Wallet Now to make transfer");
@@ -319,7 +334,7 @@ class _TransactionPinVerificationState
         Map<String, dynamic> updatedwallet = new Map();
         print("balance ${wallet["balance"]}");
         updatedwallet["balance"] = double.parse(wallet["balance"]) -
-            double.parse(widget.transferAmount);
+            double.parse(widget.amount);
 
         await _firestore
             .collection("Wallet")
@@ -516,6 +531,98 @@ class _TransactionPinVerificationState
                   Navigator.of(context)
                       .push(new CupertinoPageRoute<bool>(builder: (context) {
                     return FundWallet();
+                  }));
+                },
+              )
+            ],
+          );
+        } else {
+          return new CupertinoAlertDialog(
+            title: Text(
+              title ?? '',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: new SingleChildScrollView(
+              child: new ListBody(
+                children: <Widget>[
+                  new Text(message ?? '',
+                      style: TextStyle(fontSize: 15, fontFamily: 'Montserrat'))
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text(
+                  'OK',
+                  style: TextStyle(
+                      color: AppColors.buttonColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => MainDashboard()),
+                      (Route<dynamic> route) => false);
+                },
+              )
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  void _showKycDialog(String title, String message) {
+    showDialog<dynamic>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        if (Platform.isAndroid) {
+          return new AlertDialog(
+            title: new Text(
+              title ?? '',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: new SingleChildScrollView(
+              child: new ListBody(
+                children: <Widget>[
+                  new Text(message ?? '',
+                      style: TextStyle(fontSize: 15, fontFamily: 'Montserrat')),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: new Text(
+                  'cancel',
+                  style: TextStyle(
+                      color: AppColors.buttonColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  _removeDialog();
+                  _removeDialog();
+                  // Navigator.of(context)
+                  //     .push(new CupertinoPageRoute<bool>(builder: (context) {
+                  //   return FundWallet();
+                  // }));
+                },
+              ),
+              FlatButton(
+                child: new Text(
+                  'OK',
+                  style: TextStyle(
+                      color: AppColors.buttonColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  Navigator.of(context)
+                      .push(new CupertinoPageRoute<bool>(builder: (context) {
+                    return Kyc();
                   }));
                 },
               )

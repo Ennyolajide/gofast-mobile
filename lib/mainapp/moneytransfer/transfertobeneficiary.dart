@@ -173,13 +173,14 @@ class _TransferToBeneficiaryState extends State<TransferToBeneficiary> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
+                  Expanded( child:
                   Text(
                     snapshot['accountName'],
                     style: TextStyle(
                         color: AppColors.textColor,
-                        fontSize: 17,
+                        fontSize: 15,
                         fontFamily: 'MontserratSemiBold'),
-                  ),
+                  )),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: <Widget>[

@@ -4,9 +4,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:gofast/utils/colors.dart';
 import 'package:gofast/persistence/preferences.dart';
+import 'package:gofast/utils/colors.dart';
 import 'package:gofast/utils/utils.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -19,20 +20,27 @@ class Kyc extends StatefulWidget {
 class _KycState extends State<Kyc> {
   FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
   Firestore _firestore = Firestore.instance;
-  FirebaseUser _currentUser;
+  FirebaseUser _firebaseUser;
+  bool _uidLoaded = false;
   FirebaseAuth _auth = FirebaseAuth.instance;
   BuildContext _dialogContext;
+  String _kycMessage = '';
+  String _pendingKycMessage;
 
   @override
   void initState() {
-    _getCurrentUser();
-    _initPreferences();
     super.initState();
+    _setKycMessage();
+    _initPreferences();
+    _getCurrentUser();
+    
+    
   }
 
   void _getCurrentUser() {
     _auth.currentUser().then((user) {
-      _currentUser = user;
+      _firebaseUser = user;
+      _loadUploadedKycImage();
     });
   }
 
@@ -40,8 +48,33 @@ class _KycState extends State<Kyc> {
     Preferences.init().then((prefs) {});
   }
 
+  void _setKycMessage() {
+    _kycMessage = "Upload your ID";
+    _pendingKycMessage = "We've received your document and it is been reviewed. Allow 2 - 3 days";
+  }
 
-@override
+  void _loadUploadedKycImage(){
+    print('Loading KycImage');
+    if(Preferences.uploadedKycIdCard == ''){
+      _firestore
+        .collection("Users")
+        .document(_firebaseUser.uid)
+        .get()
+        .then((snapShot){
+          setState(() {
+            Preferences.uploadedKycIdCard = snapShot.data['uploadedKycIdCard'] ?? '';
+            Preferences.kycMessage = ((snapShot.data['kycMessage'] ?? _kycMessage) == '') ? _pendingKycMessage : _kycMessage;
+            print('KycMessage : ${Preferences.kycMessage}');
+          });
+        })
+        .catchError((e) {
+          print('Error Loading UploadedKycImage');
+        });
+    }
+  }
+
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
@@ -64,49 +97,77 @@ class _KycState extends State<Kyc> {
         body: Center(
           child: Column(
             children: <Widget>[
-              Container(
-                padding: EdgeInsets.all(30.0),
-                margin: EdgeInsets.all(20.0),
-                //margin: EdgeInsets.symmetric(vertical: 10),
-                height: screenAwareSize(300, context),
-                decoration:
-                    BoxDecoration(border: Border.all(color: AppColors.buttonColor)),
-                child: (Preferences.uploadedKycIdCard != "")
-                    ? CachedNetworkImage(
-                        imageUrl: Preferences.uploadedKycIdCard ?? '',
-                        placeholder: (context, data) {
-                          return Center(
-                            child: Image.asset(
-                              'assets/avatar.png',
-                              width: 200,
-                              color: Colors.grey,
-                              height: 200,
-                          ));
-                        },
-                        fit: BoxFit.cover,
-                        errorWidget: (context, data, obj) {
-                          return Center(
-                            child: Image.asset(
-                              'assets/avatar.png',
-                              width: 200,
-                              color: Colors.grey,
-                              height: 200,
-                          ));
-                        },
-                      )
-                    : Center(
-                        child: Image.asset(
-                          'assets/avatar.png',
-                          width: 200,
-                          color: Colors.grey,
-                          height: 200,
-                      )),
+              Padding(
+                padding: EdgeInsets.all(15),
+                child: Text("National ID, Driver's licence, Voters Card or International Passport",
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color : Colors.red,
+                ),
               ),
-              SizedBox(height: 100),
+              ),
+              
+              InkWell(
+                onTap: () => uploadImage(),
+                child: Container(
+                  padding: EdgeInsets.all(20.0),
+                  //margin: EdgeInsets.all(5.0),
+                  margin: EdgeInsets.symmetric(vertical: 10),
+                  height: screenAwareSize(300, context),
+                  decoration:
+                      BoxDecoration(border: Border.all(color: AppColors.buttonColor)),
+                  child: (Preferences.uploadedKycIdCard != "")
+                      ? CachedNetworkImage(
+                          imageUrl: Preferences.uploadedKycIdCard ?? '',
+                          placeholder: (context, data) {
+                            return Center(
+                              child: Image.asset(
+                                'assets/avatar.png',
+                                width: 200,
+                                color: Colors.grey,
+                                height: 200,
+                            ));
+                          },
+                          fit: BoxFit.cover,
+                          errorWidget: (context, data, obj) {
+                            return Center(
+                              child: Image.asset(
+                                'assets/avatar.png',
+                                width: 200,
+                                color: Colors.grey,
+                                height: 200,
+                            ));
+                          },
+                        )
+                      : Center(
+                          child: Image.asset(
+                            'assets/avatar.png',
+                            width: 200,
+                            color: Colors.grey,
+                            height: 200,
+                        )),
+                ),  
+              ),
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: Text("${Preferences.kycMessage}",
+                  textAlign: TextAlign.center,
+                  textDirection: TextDirection.ltr,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontFamily: 'MontserratSemiBold',
+                    color: Color(0xFF9D7A12)
+                  ),
+                ),
+              ),
+              SizedBox(height: 50),
               Center(
                 child : RaisedButton(
-                  onPressed: () => uploadImage(),
-                  child: Text('Upload ID'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Done'),
                   
                 )
               )
@@ -125,25 +186,27 @@ class _KycState extends State<Kyc> {
     if (_image != null) {
       _showDialog("Uploading ID...");
       StorageReference ref = _firebaseStorage
-          .ref()
-          .child("Images/KycIdCard");
-          //.child(
-              //"${Preferences.communityName}${DateTime.now().millisecondsSinceEpoch}");
+        .ref()
+        .child("Images/KycIdCard")
+        .child(
+            "${Preferences.firstname}${DateTime.now().millisecondsSinceEpoch}");
 
       StorageUploadTask uploadTask = ref.putFile(_image);
       var snapshot = await uploadTask.onComplete;
       snapshot.ref.getDownloadURL().then((imageUrl) {
         Map<String, dynamic> data = new Map();
         data['uploadedKycIdCard'] = imageUrl;
+        data['kycMessage'] = '';
 
         _firestore
             .collection("Users")
-            .document(_currentUser.uid)
+            .document(_firebaseUser.uid)
             .updateData(data)
             .then((doc) {
+              //print('doc : $data');
               setState(() {
-              Preferences.uploadedKycIdCard = imageUrl;
-              print('Preference : $Preferences.uploadedKycIdCard');
+                Preferences.uploadedKycIdCard = imageUrl;
+                Preferences.kycMessage = _pendingKycMessage;
             });
             _removeDialog();
 /*           _firestore
@@ -219,8 +282,49 @@ class StartKyc extends StatefulWidget {
 class _StartKycState extends State<StartKyc> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-       
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.black12,
+        appBar: AppBar(
+          leading: BackButton(color: Colors.white),
+          backgroundColor: AppColors.buttonColor,
+          title: Text('Verification Status',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700)),
+        
+        ),
+        body: Center(
+          child: Column(
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 10),
+                height: screenAwareSize(400, context),
+                decoration: BoxDecoration(border: Border.all(color: AppColors.buttonColor)),
+                child: 
+                  Center(
+                    child: Image.asset(
+                      'assets/check.png',
+                      width: 200,
+                      color: Colors.grey,
+                      height: 200,
+                    )
+                ),
+              ),
+              Text('Verification Successful',
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: 'MontserratSemiBold',
+                  color: Color(0xFF9D7A12),
+                ),
+              ),
+            ]
+          ),
+        ),
+      ),
     );
   }
 }

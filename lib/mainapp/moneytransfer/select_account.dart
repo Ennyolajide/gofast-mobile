@@ -17,7 +17,8 @@ Map<String, dynamic> countrySymbol = {
   "Ghana": "GHS",
   "Kenya": "KES",
   "Uganda": "UGX",
-  "Tanzania": "TZS"
+  "Tanzania": "TZS",
+  "South Africa": "ZAR",
 };
 
 class SelectAccount extends StatefulWidget {

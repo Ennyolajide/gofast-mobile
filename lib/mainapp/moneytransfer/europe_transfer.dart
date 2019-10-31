@@ -15,23 +15,19 @@ import 'package:gofast/utils/colors.dart';
 import 'package:gofast/utils/utils.dart';
 
 Map<String, dynamic> countrySymbol = {
-  "United States": "US",
-  //"South Africa": "SA",
   "Europe": "EUR"
 };
 
 Map<String, dynamic> currencies = {
-  "United States": "USD",
-  //"South Africa": "ZAR",
   "Europe": "EUR"
 };
 
-class TransferUSD extends StatefulWidget {
+class TransferEurope extends StatefulWidget {
   @override
-  _TransferUSDState createState() => _TransferUSDState();
+  _TransferEuropeState createState() => _TransferEuropeState();
 }
 
-class _TransferUSDState extends State<TransferUSD> {
+class _TransferEuropeState extends State<TransferEurope> {
   var _selectedBank;
   bool _autoValidate = false;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -46,7 +42,7 @@ class _TransferUSDState extends State<TransferUSD> {
   final _beneficiaryAddressController = TextEditingController();
   final _beneficiaryNameController = TextEditingController();
 
-  String _selectedCountry = "United States";
+  String _selectedCountry = "Europe";
   bool _bankRetrieved = false;
   bool _showIndicator = true;
   List<Bank> _bankList;
@@ -58,17 +54,19 @@ class _TransferUSDState extends State<TransferUSD> {
   List<Bank> _banks; //for bank code
   String _bankCode;
   double _charge = 0.0;
+  double _dollarToNaira = 0.0;
+  double _countryTranxCharge = 0.0;
+  Map<String, dynamic> _charges; 
 
-  _TransferUSDState() {
+  _TransferEuropeState() {
     _amountController.addListener(() {
       String amountText =
           _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
 
       if (_amountController.text.isNotEmpty &&
           double.parse(amountText) >= 100) {
-        double chargingFee = (1.43 / 100) * ((double.parse(amountText) + 55));
         setState(() {
-          _charge = chargingFee + 55;
+          _charge =  _countryTranxCharge;
         });
       } else {
         setState(() {
@@ -80,9 +78,11 @@ class _TransferUSDState extends State<TransferUSD> {
 
   @override
   void initState() {
-    // _getBanks(this._selectedCountry);
+    //_getBanks("United States");
     _initPreferences();
     _getFirebaseUser();
+    _loadCharges();
+    _getTranxCharge(_selectedCountry);
     super.initState();
   }
 
@@ -98,7 +98,28 @@ class _TransferUSDState extends State<TransferUSD> {
     });
   }
 
-  void _getBanks(String bankName) {
+  void _loadCharges() async {
+    print("Loading Charges");
+
+    _charges = {
+      "Europe": {
+        "charge" : 5, "currency" : "USD"
+      }
+    };
+    setState(() {
+      _dollarToNaira = 362;
+    });
+  }
+
+  void _getTranxCharge(String countryName){
+    Map<String, dynamic> tranxCharge = _charges[countryName];
+    var _fee = tranxCharge['currency'] == "NGN" ? tranxCharge['charge'] : tranxCharge['charge'] * _dollarToNaira;
+    setState(() {
+      _countryTranxCharge = _fee.toDouble();
+    });
+  }
+
+/*   void _getBanks(String bankName) {
     NetworkService _networkService = new NetworkService();
 
     _networkService
@@ -133,7 +154,7 @@ class _TransferUSDState extends State<TransferUSD> {
       _showErrorDialog(context, "Error",
           "An error occured while retrieving banks, try Again");
     });
-  }
+  } */
 
   void _showErrorDialog(BuildContext context, String title, String message) {
     showDialog<dynamic>(
@@ -163,7 +184,7 @@ class _TransferUSDState extends State<TransferUSD> {
                     setState(() {
                       _showIndicator = true;
                     });
-                    _getBanks("Nigeria");
+                    //_getBanks("United States");
                   },
                 ),
               ]);
@@ -172,7 +193,9 @@ class _TransferUSDState extends State<TransferUSD> {
               title: Text(title ?? ''),
               content: new SingleChildScrollView(
                 child: new ListBody(
-                  children: <Widget>[new Text(message ?? '')],
+                  children: <Widget>[
+                    Text(message ?? '')
+                  ],
                 ),
               ),
               actions: <Widget>[
@@ -190,7 +213,7 @@ class _TransferUSDState extends State<TransferUSD> {
                     setState(() {
                       _showIndicator = true;
                     });
-                    _getBanks("Nigeria");
+                    //_getBanks("United States");
                   },
                 ),
               ]);
@@ -215,7 +238,7 @@ class _TransferUSDState extends State<TransferUSD> {
       appBar: AppBar(
         leading: BackButton(color: Colors.white),
         backgroundColor: AppColors.buttonColor,
-        title: Text('Transfer Money to Others (USD, ZAR, EURO)',
+        title: Text('Transfer EURO',
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 17,
@@ -229,22 +252,24 @@ class _TransferUSDState extends State<TransferUSD> {
               key: _formKey,
               child: ListView(
                 children: <Widget>[
-                  _selectCountrySection(),
+                  SizedBox(),
+                  //_selectCountrySection(),
                   textField(
                       hintText: "Enter Account Number", label: "Account Number", controller: _accountNumberController),
                   textField(
                       hintText: "Enter Account Name", label: "Account Name", controller: _beneficiaryNameController),
-                  textField(hintText: "Enter Bank Name", label: "Bank Name", controller: _bankNameController),
-                  textField(
+                  /* textField(hintText: "Enter Bank Name", label: "Bank Name", controller: _bankNameController), */
+                  /* textField(
                       hintText: "Enter Routing Number",
-                      label: "Routing Number", controller: _routingNumberController),
-                  textField(hintText: "Enter Swift Code", label: "Swift Code", controller: _swiftCodeController),
+                      label: "Routing Number", controller: _routingNumberController), */
+                  textField(hintText: "Enter Sort Code", label: "Sort Code", controller: _swiftCodeController),
                   textField(
                       hintText: "Enter Recipient Address",
                       label: "Recipient Address", controller: _beneficiaryAddressController),
+                  _buildServiceFeeCharge(),
                   _buildAmountEntry(),
                   _buildTransferReasonEntry(),
-                  _buildServiceFeeCharge(),
+                  //_buildServiceFeeCharge(),
                   _buildNextButton()
                 ],
               ),
@@ -266,7 +291,7 @@ class _TransferUSDState extends State<TransferUSD> {
     );
   }
 
-  Widget _buildAccountNumberContainer() {
+  /* Widget _buildAccountNumberContainer() {
     return Container(
       margin: EdgeInsets.only(
         top: screenAwareSize(24, context),
@@ -312,7 +337,7 @@ class _TransferUSDState extends State<TransferUSD> {
       ),
     );
   }
-
+ */
   Widget _buildBvnContainer() {
     return Container(
       margin: EdgeInsets.only(top: screenAwareSize(30, context)),
@@ -357,7 +382,7 @@ class _TransferUSDState extends State<TransferUSD> {
     );
   }
 
-  Widget _selectCountrySection() {
+  /* Widget _selectCountrySection() {
     return Container(
       margin: EdgeInsets.only(top: screenAwareSize(30, context)),
       child: Column(
@@ -379,9 +404,10 @@ class _TransferUSDState extends State<TransferUSD> {
               onChanged: (newValue) {
                 setState(() {
                   _selectedCountry = newValue;
-                  // _showIndicator = true;
-                  // _bankRetrieved = false;
-                  // _getBanks(_selectedCountry);
+                  _showIndicator = true;
+                  _bankRetrieved = false;
+                  //_getBanks(_selectedCountry);
+                  _getTranxCharge(_selectedCountry);
                 });
               },
               items: countrySymbol.keys.map((country) {
@@ -396,8 +422,8 @@ class _TransferUSDState extends State<TransferUSD> {
       ),
     );
   }
-
-  Widget _buildBankSelection() {
+ */
+  /* Widget _buildBankSelection() {
     return Container(
         margin: EdgeInsets.only(top: screenAwareSize(30, context)),
         child: Column(
@@ -436,7 +462,7 @@ class _TransferUSDState extends State<TransferUSD> {
           ],
         ));
   }
-
+ */
   Widget _buildAmountEntry() {
     return Container(
       margin: EdgeInsets.only(
@@ -475,6 +501,10 @@ class _TransferUSDState extends State<TransferUSD> {
                       val.trim().replaceAll(",", "").replaceAll("-", "")) <
                   100.0) {
                 return 'Amount must be at least 100 naira';
+              } else if(double.parse(
+                      val.trim().replaceAll(",", "").replaceAll("-", "")) >
+                  1000000.0) {
+                return 'Amount cannot be more than 1000000 naira';
               }
             },
             autovalidate: _autoValidate,
@@ -531,7 +561,7 @@ class _TransferUSDState extends State<TransferUSD> {
           });
           final form = _formKey.currentState;
           if (form.validate()) {
-            _performAccountVerification();
+            //_performAccountVerification();
           }
         },
         color: AppColors.buttonColor,
@@ -580,7 +610,7 @@ class _TransferUSDState extends State<TransferUSD> {
   }
 
   void _verifyAccount() {
-    print("selected bank code is ---> ${_bankCode}");
+    print("selected bank code is ---> $_bankCode");
     NetworkService service = NetworkService();
     // AddAccountRequest accountRequest =
     //     new AddAccountRequest(_accountNumberController.text.trim(), _bankCode);
@@ -605,8 +635,8 @@ class _TransferUSDState extends State<TransferUSD> {
     meta["BeneficiaryAddress"] = _beneficiaryAddressController.text.trim();
     meta["BeneficiaryCountry"] = "US";
 
-    print("final amount charge is ->> ${finalAmountCharge}");
-    print("final final amount to transfer --> ${amountEntered}");
+    print("final amount charge is ->> $finalAmountCharge");
+    print("final final amount to transfer --> $amountEntered");
 
     Navigator.of(context, rootNavigator: false).push(
       CupertinoPageRoute<bool>(

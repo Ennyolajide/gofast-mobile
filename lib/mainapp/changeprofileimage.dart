@@ -39,6 +39,7 @@ class _ChangeImageState extends State<ChangeImage> {
     Preferences.init().then((prefs) {});
   }
 
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -70,7 +71,7 @@ class _ChangeImageState extends State<ChangeImage> {
                     imageUrl: Preferences.profilePicture ?? '',
                     placeholder: (context, data) {
                       return Center(
-                          child: Image.asset(
+                        child: Image.asset(
                         'assets/avatar.png',
                         width: 200,
                         color: Colors.grey,
@@ -80,7 +81,7 @@ class _ChangeImageState extends State<ChangeImage> {
                     fit: BoxFit.cover,
                     errorWidget: (context, data, obj) {
                       return Center(
-                          child: Image.asset(
+                        child: Image.asset(
                         'assets/avatar.png',
                         width: 200,
                         color: Colors.grey,

@@ -3,17 +3,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Preferences {
   static SharedPreferences prefs;
 
+//isAccountVerified
+
+
+
   static set phoneNumber(String phonenumber) =>
       prefs.setString("phonenumber", phonenumber);
   static get phoneNumber => prefs.getString("phonenumber") ?? '';
-
-  static set iskycCompleted(bool iskycCompleted) =>
-      prefs.setBool("iskycCompleted", iskycCompleted);
-  static get iskycCompleted => prefs.getBool("iskycCompleted") ?? false;
-
-  static set uploadedKycIdCard(String uploadedKycIdCard) =>
-      prefs.setString("uploadedKycIdCard", uploadedKycIdCard);
-  static get uploadedKycIdCard => prefs.getString("uploadedKycIdCard") ?? '';
 
   static set email(String email) => prefs.setString("email", email);
   static get email => prefs.getString("email") ?? '';
@@ -33,6 +29,11 @@ class Preferences {
 
   static set lastname(String lastname) => prefs.setString("lastname", lastname);
   static get lastname => prefs.getString("lastname") ?? '';
+
+//TODO remove the preference below
+/*   static set isAccountVerified(String isAccountVerified) =>
+      prefs.setString("isAccountVerified", isAccountVerified);
+  static get isAccountVerified => prefs.getString("isAccountVerified") ?? ''; */
 
   static set profilePicture(String profilePicture) =>
       prefs.setString("profilePicture", profilePicture);
@@ -82,6 +83,17 @@ class Preferences {
       prefs.setBool("notificationAfterTransactionSuccess", value);
   static bool get notificationAfterTransactionSuccess =>
       prefs.getBool("notificationAfterTransactionSuccess") ?? false;
+
+  static set kycMessage(String kycMessage) => prefs.setString("kycMessage", kycMessage);
+  static get kycMessage => prefs.getString("kycMessage") ?? '';
+
+  static set iskycCompleted(bool iskycCompleted) =>
+      prefs.setBool("iskycCompleted", iskycCompleted);
+  static get iskycCompleted => prefs.getBool("iskycCompleted") ?? false;
+
+  static set uploadedKycIdCard(String uploadedKycIdCard) =>
+      prefs.setString("uploadedKycIdCard", uploadedKycIdCard);
+  static get uploadedKycIdCard => prefs.getString("uploadedKycIdCard") ?? '';
 
   static Future<Null> init() async {
     prefs = await SharedPreferences.getInstance();
