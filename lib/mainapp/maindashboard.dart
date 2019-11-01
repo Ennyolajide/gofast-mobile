@@ -1377,7 +1377,7 @@ class _MainDashboardState extends State<MainDashboard>
                       );
                     },
                   ),
-                  ListTile(
+                 /*  ListTile(
                     title: Text(
                       'African Countries',
                       style: TextStyle(
@@ -1394,7 +1394,7 @@ class _MainDashboardState extends State<MainDashboard>
                       );
                     },
                   ),
-                ],
+               */  ],
               ),
             ),
           );
