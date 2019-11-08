@@ -57,7 +57,9 @@ class _MainDashboardState extends State<MainDashboard>
 
   void _loadWallet() async {
     print("Loading wallet");
-    
+    print('Loading KYC preferences');
+    print(Preferences.iskycCompleted);
+
     if (_uidLoaded) {
       DocumentSnapshot w = await _firestore
           .collection("Wallet")
@@ -219,9 +221,7 @@ class _MainDashboardState extends State<MainDashboard>
           _buildListTile('assets/beneficiaries.png', "Beneficiaries List",
               launchPage: Beneficiaries()),
           _buildListTile('assets/service_profile.png', "Verification",
-              launchPage: Preferences.iskycCompleted
-                  ? StartKyc()
-                  : Kyc()),
+              launchPage: Kyc()),
           _buildListTile('assets/milestones.png', "Milestone",
               launchPage: Milestones()),
           _buildListTile('assets/milestones.png', "Term & Privary",

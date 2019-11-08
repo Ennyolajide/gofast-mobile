@@ -55,6 +55,7 @@ class _TransferUSDState extends State<TransferUSD> {
   String _bankCode;
   double _charge = 0.0;
   double _dollarToNaira = 0.0;
+  double _percentageCharge = 0.0;
   double _countryTranxCharge = 0.0;
   Map<String, dynamic> _charges; 
 
@@ -63,10 +64,9 @@ class _TransferUSDState extends State<TransferUSD> {
       String amountText =
           _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
 
-      if (_amountController.text.isNotEmpty &&
-          double.parse(amountText) >= 100) {
+      if (_amountController.text.isNotEmpty && double.parse(amountText) >= 10000) {
         setState(() {
-          _charge =  _countryTranxCharge;
+          _charge =  _countryTranxCharge + (_percentageCharge/100 * double.parse(amountText));
         });
       } else {
         setState(() {
@@ -103,7 +103,7 @@ class _TransferUSDState extends State<TransferUSD> {
 
     _charges = {
       "United States": {
-        "charge" : 5, "currency" : "USD"
+        "charge" : 5, "currency" : "USD", "percentageCharge" : 2,
       }
     };
     setState(() {
@@ -113,13 +113,15 @@ class _TransferUSDState extends State<TransferUSD> {
 
   void _getTranxCharge(String countryName){
     Map<String, dynamic> tranxCharge = _charges[countryName];
-    var _fee = tranxCharge['currency'] == "NGN" ? tranxCharge['charge'] : tranxCharge['charge'] * _dollarToNaira;
+    var _fee = tranxCharge['charge'] * _dollarToNaira;
+    var _percentCharge = tranxCharge['percentageCharge'];
     setState(() {
       _countryTranxCharge = _fee.toDouble();
+      _percentageCharge = _percentCharge.toDouble();
     });
   }
 
-  void _getBanks(String bankName) {
+/*  void _getBanks(String bankName) {
     NetworkService _networkService = new NetworkService();
 
     _networkService
@@ -154,7 +156,7 @@ class _TransferUSDState extends State<TransferUSD> {
       _showErrorDialog(context, "Error",
           "An error occured while retrieving banks, try Again");
     });
-  }
+  }*/
 
   void _showErrorDialog(BuildContext context, String title, String message) {
     showDialog<dynamic>(
@@ -238,7 +240,7 @@ class _TransferUSDState extends State<TransferUSD> {
       appBar: AppBar(
         leading: BackButton(color: Colors.white),
         backgroundColor: AppColors.buttonColor,
-        title: Text('Transfer Money to USD ',
+        title: Text('Transfer Money to USA ',
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 17,
@@ -504,13 +506,14 @@ class _TransferUSDState extends State<TransferUSD> {
                 return 'Field is required';
               } else if (double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) <
-                  100.0) {
-                return 'Amount must be at least 100 naira';
+                  10000.0) {
+                return 'Amount must be at least 10,000 naira';
               } else if(double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) >
-                  1000000.0) {
-                return 'Amount cannot be more than 1000000 naira';
+                  2000000.0) {
+                return 'Amount cannot be more than 2,000,0000 naira';
               }
+              return null;
             },
             autovalidate: _autoValidate,
           )
@@ -615,7 +618,7 @@ class _TransferUSDState extends State<TransferUSD> {
   }
 
   void _verifyAccount() {
-    print("selected bank code is ---> ${_bankCode}");
+    print("selected bank code is ---> $_bankCode");
     NetworkService service = NetworkService();
     // AddAccountRequest accountRequest =
     //     new AddAccountRequest(_accountNumberController.text.trim(), _bankCode);
@@ -716,7 +719,9 @@ class _TransferUSDState extends State<TransferUSD> {
                                 color: Colors.black,
                                 fontSize: 22.0,
                                 fontWeight: FontWeight.w700)))
-                  ]))),
+                  ])
+              )
+          ),
         );
       },
     );

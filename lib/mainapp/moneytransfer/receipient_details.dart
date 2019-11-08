@@ -45,6 +45,7 @@ class _TransferMoneyState extends State<TransferMoney> {
   // TextEditingController _bvnController = new TextEditingController();
   final _amountController = TextEditingController();
   final _remarksController = TextEditingController();
+
   String _selectedCountry = "Nigeria";
   bool _bankRetrieved = false;
   bool _showIndicator = true;
@@ -547,9 +548,10 @@ class _TransferMoneyState extends State<TransferMoney> {
                 return 'Amount must be at least 100 naira';
               } else if (double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) >
-                  100000.0) {
-                return 'Amount must not be more than 100,000 naira';
+                  2000000.0) {
+                return 'Amount must not be more than 2,000,000 naira';
               }
+              return null;
             },
             autovalidate: _autoValidate,
           )
@@ -746,7 +748,9 @@ class _TransferMoneyState extends State<TransferMoney> {
                                 color: Colors.black,
                                 fontSize: 22.0,
                                 fontWeight: FontWeight.w700)))
-                  ]))),
+                  ])
+              )
+          ),
         );
       },
     );

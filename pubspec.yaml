@@ -32,7 +32,7 @@ dependencies:
   firebase_storage: 1.0.4
   firebase_auth: 0.7.0
   http: ^0.12.0
-  country_pickers: ^1.0.2
+  country_pickers: ^1.1.0
   shared_preferences: ^0.4.1
   credit_card_number_validator: ^1.0.4
   device_info: 0.3.0
@@ -44,6 +44,7 @@ dependencies:
   url_launcher: ^3.0.3
   flutter_statusbarcolor: 0.1.4
   flutter_plugin_pdf_viewer: ^1.0.7
+  #country_code_picker: ^1.1.7
 
 
 flutter_icons:

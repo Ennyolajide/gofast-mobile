@@ -54,7 +54,8 @@ class _TransferEuropeState extends State<TransferEurope> {
   List<Bank> _banks; //for bank code
   String _bankCode;
   double _charge = 0.0;
-  double _dollarToNaira = 0.0;
+  double _euroToNaira = 0.0;
+  double _percentageCharge = 0.0;
   double _countryTranxCharge = 0.0;
   Map<String, dynamic> _charges; 
 
@@ -64,9 +65,9 @@ class _TransferEuropeState extends State<TransferEurope> {
           _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
 
       if (_amountController.text.isNotEmpty &&
-          double.parse(amountText) >= 100) {
+          double.parse(amountText) >= 10000) {
         setState(() {
-          _charge =  _countryTranxCharge;
+          _charge =  _countryTranxCharge + (_percentageCharge/100 * double.parse(amountText));
         });
       } else {
         setState(() {
@@ -103,19 +104,21 @@ class _TransferEuropeState extends State<TransferEurope> {
 
     _charges = {
       "Europe": {
-        "charge" : 5, "currency" : "USD"
+        "charge" : 5, "currency" : "EUR", "percentageCharge" : 2,
       }
     };
     setState(() {
-      _dollarToNaira = 362;
+      _euroToNaira = 400;
     });
   }
 
   void _getTranxCharge(String countryName){
     Map<String, dynamic> tranxCharge = _charges[countryName];
-    var _fee = tranxCharge['currency'] == "NGN" ? tranxCharge['charge'] : tranxCharge['charge'] * _dollarToNaira;
+    var _fee =  tranxCharge['charge'] * _euroToNaira;
+    var _percentCharge = tranxCharge['percentageCharge'];
     setState(() {
       _countryTranxCharge = _fee.toDouble();
+      _percentageCharge = _percentCharge.toDouble();
     });
   }
 
@@ -499,13 +502,14 @@ class _TransferEuropeState extends State<TransferEurope> {
                 return 'Field is required';
               } else if (double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) <
-                  100.0) {
-                return 'Amount must be at least 100 naira';
+                  10000.0) {
+                return 'Amount must be at least 10,000 naira';
               } else if(double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) >
-                  1000000.0) {
-                return 'Amount cannot be more than 1000000 naira';
+                  2000000.0) {
+                return 'Amount cannot be more than 2,000,000 naira';
               }
+              return null;
             },
             autovalidate: _autoValidate,
           )

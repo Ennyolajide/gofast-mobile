@@ -26,6 +26,7 @@ class _KycState extends State<Kyc> {
   BuildContext _dialogContext;
   String _kycMessage = '';
   String _pendingKycMessage;
+  bool _isAccountVerified = false;
 
   @override
   void initState() {
@@ -33,8 +34,6 @@ class _KycState extends State<Kyc> {
     _setKycMessage();
     _initPreferences();
     _getCurrentUser();
-    
-    
   }
 
   void _getCurrentUser() {
@@ -53,6 +52,22 @@ class _KycState extends State<Kyc> {
     _pendingKycMessage = "We've received your document and it is been reviewed. Allow 2 - 3 days";
   }
 
+  void _checkVerification() {
+    print('Checking Verificatfion');
+    _firestore
+      .collection("Users")
+      .document(_firebaseUser.uid)
+      .get()
+      .then((snapShot){
+        setState(() {
+         _isAccountVerified = snapShot.data['isAccountVerified'] ?? false;
+          Preferences.kycMessage = ((snapShot.data['kycMessage'] ?? _kycMessage) == '') ? _pendingKycMessage : _kycMessage;
+        });
+    }).catchError((e) {
+      print('Error Loading Verification Status');
+    });
+  }
+
   void _loadUploadedKycImage(){
     print('Loading KycImage');
     if(Preferences.uploadedKycIdCard == ''){
@@ -62,6 +77,7 @@ class _KycState extends State<Kyc> {
         .get()
         .then((snapShot){
           setState(() {
+            _isAccountVerified = snapShot.data['isAccountVerified'] ?? false;
             Preferences.uploadedKycIdCard = snapShot.data['uploadedKycIdCard'] ?? '';
             Preferences.kycMessage = ((snapShot.data['kycMessage'] ?? _kycMessage) == '') ? _pendingKycMessage : _kycMessage;
             print('KycMessage : ${Preferences.kycMessage}');
@@ -70,6 +86,8 @@ class _KycState extends State<Kyc> {
         .catchError((e) {
           print('Error Loading UploadedKycImage');
         });
+    }else{
+      _checkVerification();
     }
   }
 
@@ -91,7 +109,7 @@ class _KycState extends State<Kyc> {
             IconButton(
                 tooltip: 'Upload Valid ID',
                 icon: Icon(Icons.mode_edit, color: Colors.white),
-                onPressed: () => uploadImage())
+                onPressed: () => _isAccountVerified ? '' : uploadImage())
           ],
         ),
         body: Center(
@@ -99,17 +117,20 @@ class _KycState extends State<Kyc> {
             children: <Widget>[
               Padding(
                 padding: EdgeInsets.all(15),
-                child: Text("National ID, Driver's licence, Voters Card or International Passport",
-                textDirection: TextDirection.ltr,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color : Colors.red,
+                child: Text(_isAccountVerified ? 'Verification Complete' : "National ID, Driver's licence, Voters Card or International Passport",
+                  textDirection: TextDirection.ltr,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'MontserratSemiBold',
+                    fontSize: _isAccountVerified ? 18 : 16,
+                    color : _isAccountVerified ? Colors.green : Colors.red,
+                  ),
                 ),
               ),
-              ),
-              
+
+
               InkWell(
-                onTap: () => uploadImage(),
+                onTap: () => _isAccountVerified ? '' : uploadImage(),
                 child: Container(
                   padding: EdgeInsets.all(20.0),
                   //margin: EdgeInsets.all(5.0),
@@ -265,13 +286,16 @@ class _KycState extends State<Kyc> {
                                 color: Colors.black,
                                 fontSize: 22.0,
                                 fontWeight: FontWeight.w700)))
-                  ]))),
+                  ])
+              )
+          ),
         );
       },
     );
   }
 }
 
+/*
 
 class StartKyc extends StatefulWidget {
   StartKyc({Key key}) : super(key: key);
@@ -293,7 +317,7 @@ class _StartKycState extends State<StartKyc> {
                   color: Colors.white,
                   fontSize: 17,
                   fontWeight: FontWeight.w700)),
-        
+
         ),
         body: Center(
           child: Column(
@@ -302,7 +326,7 @@ class _StartKycState extends State<StartKyc> {
                 margin: EdgeInsets.symmetric(vertical: 10),
                 height: screenAwareSize(400, context),
                 decoration: BoxDecoration(border: Border.all(color: AppColors.buttonColor)),
-                child: 
+                child:
                   Center(
                     child: Image.asset(
                       'assets/check.png',
@@ -328,6 +352,7 @@ class _StartKycState extends State<StartKyc> {
     );
   }
 }
+*/
 
 
 

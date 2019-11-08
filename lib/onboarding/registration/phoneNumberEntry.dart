@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:country_pickers/country.dart';
 import 'package:country_pickers/country_pickers.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,6 +11,7 @@ import 'package:gofast/onboarding/registration/otpEntry.dart';
 import 'package:gofast/utils/colors.dart';
 import 'package:gofast/utils/utils.dart';
 
+
 class PhoneNumberEntry extends StatefulWidget {
   String _type;
 
@@ -19,19 +22,21 @@ class PhoneNumberEntry extends StatefulWidget {
 }
 
 class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
-  Country _selectedDialogCountry =
-      CountryPickerUtils.getCountryByPhoneCode('90');
+  Country _selectedDialogCountry = CountryPickerUtils.getCountryByPhoneCode('234');
+  bool _countrySelected = false;
   bool _autoValidate = false;
   TextEditingController _phoneNumberController = TextEditingController();
   final _formKey = new GlobalKey<FormState>();
   String _phoneNumber;
   BuildContext _dialogContext;
 
+
   @override
   void dispose() {
     _phoneNumberController.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +75,7 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
               ),
               SizedBox(height: screenAwareSize(130, context)),
               buildPhoneNumberTextContainer(),
-              SizedBox(height: screenAwareSize(20, context)),
+              SizedBox(height: screenAwareSize(30, context)),
               buildPhoneNumberTextField(),
               SizedBox(height: screenAwareSize(10, context)),
               buildTextContainer(),
@@ -99,7 +104,7 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
           children: <Widget>[
             CountryPickerUtils.getDefaultFlagImage(country),
             SizedBox(width: 4.0),
-            Text("+${country.phoneCode}"),
+            Text("+${country.phoneCode}   ${country.name}"),
             SizedBox(width: 3.0),
           ],
         ),
@@ -119,17 +124,25 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
             counterText: '',
             contentPadding: EdgeInsets.only(bottom: 12, left: 12),
             labelText: 'Phone number',
-            prefixText: '+234',
-            prefixStyle: TextStyle(fontSize: 16),
-            prefixIcon: Icon(Icons.phone_android,
-                color: AppColors.onboardingTextFieldHintTextColor
-                    .withOpacity(0.2)),
+            prefixText: '+${_selectedDialogCountry.phoneCode}',
+            prefixStyle: TextStyle(fontSize: 18),
+            prefixIcon: IconButton(
+              icon: Image.asset(
+                CountryPickerUtils.getFlagImageAssetPath('${_selectedDialogCountry.isoCode}'),
+                height: 20.0,
+                width: 60.0,
+                fit: BoxFit.fill,
+                package: "country_pickers",
+              ),
+              onPressed: () {
+                Platform.isIOS ? _openCupertinoCountryPicker() : _openCountryPickerDialog();
+              },
+            ),
             focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: AppColors.buttonColor, width: 1.0),
             ),
             hasFloatingPlaceholder: false,
-            labelStyle:
-                TextStyle(color: AppColors.onboardingTextFieldHintTextColor),
+            labelStyle: TextStyle(color: AppColors.onboardingTextFieldHintTextColor),
           ),
           validator: (val) {
             if (val.isEmpty) {
@@ -137,6 +150,7 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
             } else if (val.length != 10) {
               return 'Invalid phone number length';
             }
+            return null;
           },
           onSaved: (val) {
             _phoneNumber = val;
@@ -151,11 +165,13 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
   Widget buildTextContainer() {
     return Container(
       margin: EdgeInsets.only(
-          left: 19, right: 19, top: screenAwareSize(10, context)),
+          left: 19, right: 19, top: screenAwareSize(10, context)
+      ),
       child: Text(
           'Make sure you enter your phone number connected with your bank account, we will send a one time password(OTP) to your phone.',
           style: TextStyle(
-              color: AppColors.onboardingTextFieldHintTextColor, fontSize: 14)),
+              color: AppColors.onboardingTextFieldHintTextColor, fontSize: 14)
+      ),
     );
   }
 
@@ -181,6 +197,7 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
     );
   }
 
+
   void _openCountryPickerDialog() => showDialog(
         context: context,
         builder: (context) => Theme(
@@ -194,10 +211,31 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
                   'Select your phone number code',
                   style: TextStyle(fontSize: 16),
                 ),
-                onValuePicked: (Country country) =>
-                    setState(() => _selectedDialogCountry = country),
-                itemBuilder: _buildDialogItem)),
+                onValuePicked: (Country country) => setState((){
+                    //print("Type : ${CountryPickerUtils.getDefaultFlagImage(country).runtimeType}");
+                    _selectedDialogCountry = country;
+                    _countrySelected = true;
+                    print("Country : ${country.name}  ${country.phoneCode}");
+                }),
+                itemBuilder: _buildDialogItem
+            )
+        ),
       );
+
+  void _openCupertinoCountryPicker() => showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return CountryPickerCupertino(
+          pickerSheetHeight: 300.0,
+          onValuePicked: (Country country) =>
+              setState(()  {
+                _selectedDialogCountry = country;
+                _countrySelected = true;
+                print("Country : ${country.name}  ${country.phoneCode}");
+              })
+        );
+      });
+
 
   void _submit() {
     setState(() {
@@ -207,22 +245,22 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
 
     if (form.validate()) {
       form.save();
-      print("phonenumber => $_phoneNumber");
+      print("phonenumber => ${_selectedDialogCountry.phoneCode}$_phoneNumber");
       //send otp here
       _showDialog("Sending otp..");
       NetworkService networkService = new NetworkService();
       SendOtpRequest request =
-          new SendOtpRequest(CONFIG.TWOFACTOR_API_KEY, '+234$_phoneNumber');
+          new SendOtpRequest(CONFIG.TWOFACTOR_API_KEY, '+${_selectedDialogCountry.phoneCode}$_phoneNumber');
       networkService.sendOtp(request).then((response) {
         if (response.status == "Success") {
           _removeDialog();
           Navigator.of(context, rootNavigator: false).push(
             CupertinoPageRoute<bool>(
               builder: (BuildContext context) => OtpSetup(
-                    type: widget._type,
-                    phoneNumber: "+234$_phoneNumber",
-                    session: response.sessionKey,
-                  ),
+                type: widget._type,
+                phoneNumber: '+${_selectedDialogCountry.phoneCode}$_phoneNumber',
+                session: response.sessionKey,
+              ),
             ),
           );
         } else {
@@ -254,7 +292,8 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
               insetAnimationDuration: Duration(milliseconds: 100),
               elevation: 10.0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10.0))),
+                  borderRadius: BorderRadius.all(Radius.circular(10.0))
+              ),
               child: SizedBox(
                   height: 100.0,
                   child: Row(children: <Widget>[
@@ -272,8 +311,13 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
                             style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 22.0,
-                                fontWeight: FontWeight.w700)))
-                  ]))),
+                                fontWeight: FontWeight.w700
+                            )
+                        )
+                    )
+                  ])
+              )
+          ),
         );
       },
     );

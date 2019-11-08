@@ -37,18 +37,21 @@ class _DetailsForbeneficiaryTransferState
   FirebaseAuth _mAuth = FirebaseAuth.instance;
   BuildContext _dialogContext;
   double _charge = 0.0;
+  String _currency = "NGN";
+  double _percentageCharge = 0.0;
+  double _countryTranxCharge = 50;
+  Map<String, dynamic> _charges;
 
   _DetailsForbeneficiaryTransferState() {
     _amountController.addListener(() {
       String amountText =
           _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
-      print("amount $amountText");
-      if (_amountController.text.isNotEmpty &&
-          double.parse(amountText) >= 100) {
-        double chargingFee = (1.43 / 100) * ((double.parse(amountText) + 55));
+
+      if (_amountController.text.isNotEmpty && double.parse(amountText) >= 100) {
         setState(() {
-          _charge = chargingFee + 55;
+          _charge =  _countryTranxCharge + (_percentageCharge/100 * double.parse(amountText));
         });
+        print("Charge : -> ${_charge.runtimeType}");
       } else {
         setState(() {
           _charge = 0.0;
@@ -282,6 +285,8 @@ class _DetailsForbeneficiaryTransferState
           double amountEntered = double.parse(amountText);
 
           double finalAmountCharge = _charge + amountEntered;
+          print("final amount charge is ->> $finalAmountCharge");
+          print("final final amount to transfer --> $amountEntered");
 
           Navigator.of(context, rootNavigator: false).push(
             CupertinoPageRoute<bool>(
