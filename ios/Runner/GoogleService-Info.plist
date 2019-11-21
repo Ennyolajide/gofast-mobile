@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>349923092098-lq8f2lsmqm6vnir31s7lud751qt1944b.apps.googleusercontent.com</string>
+	<string>349923092098-888dhcgppehlr5sfm4f8hp330b8c8hfq.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.349923092098-lq8f2lsmqm6vnir31s7lud751qt1944b</string>
+	<string>com.googleusercontent.apps.349923092098-888dhcgppehlr5sfm4f8hp330b8c8hfq</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBCoZTiZ8LfPNvU1wvFtGAKnGN4Sl8nbLU</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.villz.gofast</string>
+	<string>com.gofastapp.gofast</string>
 	<key>PROJECT_ID</key>
 	<string>gofast-mobile-222bc</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,7 +29,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:349923092098:ios:4a4a57167f02644219b69b</string>
+	<string>1:349923092098:ios:8c542716236a1f2219b69b</string>
 	<key>DATABASE_URL</key>
 	<string>https://gofast-mobile-222bc.firebaseio.com</string>
 </dict>

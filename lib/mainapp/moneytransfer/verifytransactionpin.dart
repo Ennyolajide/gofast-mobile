@@ -193,6 +193,8 @@ class _TransactionPinVerificationState
             return 'Pin is required';
           } else if (val.length < 5) {
             return 'Pin must be at least 5 characters long';
+          }else{
+            return null;
           }
         },
         autovalidate: _autoValidate,

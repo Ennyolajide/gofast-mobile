@@ -30,10 +30,9 @@ class Preferences {
   static set lastname(String lastname) => prefs.setString("lastname", lastname);
   static get lastname => prefs.getString("lastname") ?? '';
 
-//TODO remove the preference below
-/*   static set isAccountVerified(String isAccountVerified) =>
-      prefs.setString("isAccountVerified", isAccountVerified);
-  static get isAccountVerified => prefs.getString("isAccountVerified") ?? ''; */
+  static set isAccountVerified(bool isAccountVerified) =>
+      prefs.setBool("isAccountVerified", isAccountVerified);
+  static get isAccountVerified => prefs.getBool("isAccountVerified") ?? false;
 
   static set profilePicture(String profilePicture) =>
       prefs.setString("profilePicture", profilePicture);

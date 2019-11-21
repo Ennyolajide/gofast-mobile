@@ -147,6 +147,8 @@ class _EmailSetupState extends State<EmailSetup> {
             return 'Email Address is required';
           } else if (!Utils.validateEmail(val)) {
             return 'Please enter valid email Address';
+          }else{
+            return null;
           }
         },
         autovalidate: _autoValidate,
@@ -206,6 +208,8 @@ class _EmailSetupState extends State<EmailSetup> {
             return 'Field is required';
           } else if (val.length < 8) {
             return 'Password must be at least 8 characters';
+          }else{
+            return null;
           }
         },
         autovalidate: _autoValidate,
@@ -241,6 +245,8 @@ class _EmailSetupState extends State<EmailSetup> {
             return 'Field is required';
           } else if (val.length < 8) {
             return 'Password must be at least 8 characters';
+          }else{
+            return null;
           }
         },
         autovalidate: _autoValidate,
@@ -340,7 +346,7 @@ class _EmailSetupState extends State<EmailSetup> {
     showDialog<dynamic>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext context) {s
         _dialogContext = context;
         return WillPopScope(
           onWillPop: () {},

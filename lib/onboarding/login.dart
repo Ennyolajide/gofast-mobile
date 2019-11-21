@@ -177,6 +177,8 @@ class _LoginState extends State<Login> {
             return 'Email Address is required';
           } else if (!Utils.validateEmail(val)) {
             return 'Please enter valid email Address';
+          }else{
+            return null;
           }
         },
         autovalidate: _autoValidate,
@@ -236,6 +238,8 @@ class _LoginState extends State<Login> {
             return 'Field is required';
           } else if (val.length < 8) {
             return 'Password must be at least 8 characters';
+          }else{
+            return null;
           }
         },
         autovalidate: _autoValidate,
