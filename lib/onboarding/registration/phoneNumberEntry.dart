@@ -95,7 +95,9 @@ class _PhoneNumberEntryState extends State<PhoneNumberEntry> {
               color: AppColors.onboardingPlaceholderText,
               fontSize: 19,
               fontFamily: 'MontserratBold',
-              fontWeight: FontWeight.bold)),
+              fontWeight: FontWeight.bold
+          ),
+      ),
     );
   }
 

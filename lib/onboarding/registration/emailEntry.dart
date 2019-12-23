@@ -346,7 +346,7 @@ class _EmailSetupState extends State<EmailSetup> {
     showDialog<dynamic>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {s
+      builder: (BuildContext context) {
         _dialogContext = context;
         return WillPopScope(
           onWillPop: () {},

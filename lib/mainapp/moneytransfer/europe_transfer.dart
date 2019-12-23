@@ -8,7 +8,6 @@ import 'package:gofast/config/urlconstants.dart';
 import 'package:gofast/mainapp/components/form_components.dart';
 import 'package:gofast/mainapp/moneytransfer/verifytransactionpin.dart';
 import 'package:gofast/network/apiservice.dart';
-import 'package:gofast/network/request/addaccountrequest.dart';
 import 'package:gofast/network/response/gettransferbanksresponse.dart';
 import 'package:gofast/persistence/preferences.dart';
 import 'package:gofast/utils/colors.dart';
@@ -22,13 +21,19 @@ Map<String, dynamic> currencies = {
   "Europe": "EUR"
 };
 
+Map<String, String> europeCountries = {
+  'Germany' : 'DE',
+  'United Kindom' : 'GB' ,
+  'Italy' : 'IT',
+  'France' : 'FR',
+};
+
 class TransferEurope extends StatefulWidget {
   @override
   _TransferEuropeState createState() => _TransferEuropeState();
 }
 
 class _TransferEuropeState extends State<TransferEurope> {
-  var _selectedBank;
   bool _autoValidate = false;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = new GlobalKey<FormState>();
@@ -37,24 +42,25 @@ class _TransferEuropeState extends State<TransferEurope> {
   final _routingNumberController = TextEditingController();
   final _swiftCodeController = TextEditingController();
   final _bankNameController = TextEditingController();
+  final _beneficiaryPostalCodeController = TextEditingController();
+  final _beneficiaryStreetNumberController = TextEditingController();
+  final _beneficiaryStreetNameController = TextEditingController();
+  final _beneficiaryCityController = TextEditingController();
   final _amountController = TextEditingController();
   final _remarksController = TextEditingController();
   final _beneficiaryAddressController = TextEditingController();
   final _beneficiaryNameController = TextEditingController();
 
+
   String _selectedCountry = "Europe";
-  bool _bankRetrieved = false;
   bool _showIndicator = true;
-  List<Bank> _bankList;
   BuildContext _dialogContext;
   Firestore _firestore = Firestore.instance;
   FirebaseAuth _mAuth = FirebaseAuth.instance;
   FirebaseUser fbUser;
   bool _isShowing = false;
-  List<Bank> _banks; //for bank code
   String _bankCode;
   double _charge = 0.0;
-  double _euroToNaira = 0.0;
   double _percentageCharge = 0.0;
   double _countryTranxCharge = 0.0;
   Map<String, dynamic> _charges; 
@@ -65,7 +71,7 @@ class _TransferEuropeState extends State<TransferEurope> {
           _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
 
       if (_amountController.text.isNotEmpty &&
-          double.parse(amountText) >= 10000) {
+          double.parse(amountText) >= 200) {
         setState(() {
           _charge =  _countryTranxCharge + (_percentageCharge/100 * double.parse(amountText));
         });
@@ -79,7 +85,6 @@ class _TransferEuropeState extends State<TransferEurope> {
 
   @override
   void initState() {
-    //_getBanks("United States");
     _initPreferences();
     _getFirebaseUser();
     _loadCharges();
@@ -107,57 +112,18 @@ class _TransferEuropeState extends State<TransferEurope> {
         "charge" : 5, "currency" : "EUR", "percentageCharge" : 2,
       }
     };
-    setState(() {
-      _euroToNaira = 400;
-    });
+
   }
 
   void _getTranxCharge(String countryName){
     Map<String, dynamic> tranxCharge = _charges[countryName];
-    var _fee =  tranxCharge['charge'] * _euroToNaira;
+    var _fee =  tranxCharge['charge'];
     var _percentCharge = tranxCharge['percentageCharge'];
     setState(() {
       _countryTranxCharge = _fee.toDouble();
       _percentageCharge = _percentCharge.toDouble();
     });
   }
-
-/*   void _getBanks(String bankName) {
-    NetworkService _networkService = new NetworkService();
-
-    _networkService
-        .getTransferBanks(countrySymbol[bankName], UrlConstants.LIVE_PUBLIC_KEY)
-        .then((response) {
-      if (response.status == "success") {
-        setState(() {
-          _showIndicator = false;
-          _bankRetrieved = true;
-        });
-
-        _bankList = response.banks;
-        _selectedBank = _bankList.elementAt(0).name;
-        setState(() {
-          _bankCode = _bankList.elementAt(0).code;
-        });
-      } else {
-        setState(() {
-          _showIndicator = false;
-        });
-        _showErrorDialog(
-          context,
-          "Banks Retrieval failed!",
-          response.message,
-        );
-      }
-    }).catchError((e) {
-      print("error occurred while getting banks");
-      setState(() {
-        _showIndicator = false;
-      });
-      _showErrorDialog(context, "Error",
-          "An error occured while retrieving banks, try Again");
-    });
-  } */
 
   void _showErrorDialog(BuildContext context, String title, String message) {
     showDialog<dynamic>(
@@ -180,7 +146,9 @@ class _TransferEuropeState extends State<TransferEurope> {
                       style: TextStyle(
                           color: AppColors.buttonColor,
                           fontSize: 14,
-                          fontWeight: FontWeight.bold)),
+                          fontWeight: FontWeight.bold
+                      ),
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop();
                     print("recalled");
@@ -208,7 +176,8 @@ class _TransferEuropeState extends State<TransferEurope> {
                     style: TextStyle(
                         color: AppColors.buttonColor,
                         fontSize: 14,
-                        fontWeight: FontWeight.bold),
+                        fontWeight: FontWeight.bold
+                    ),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -230,7 +199,6 @@ class _TransferEuropeState extends State<TransferEurope> {
     _accountNumberController.dispose();
     _amountController.dispose();
     _remarksController.dispose();
-    // _bvnController.dispose();
     super.dispose();
   }
 
@@ -245,7 +213,9 @@ class _TransferEuropeState extends State<TransferEurope> {
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 17,
-                fontWeight: FontWeight.w700)),
+                fontWeight: FontWeight.w700
+            ),
+        ),
       ),
       body: Stack(
         children: <Widget>[
@@ -255,20 +225,17 @@ class _TransferEuropeState extends State<TransferEurope> {
               key: _formKey,
               child: ListView(
                 children: <Widget>[
-                  SizedBox(),
-                  //_selectCountrySection(),
-                  textField(
-                      hintText: "Enter Account Number", label: "Account Number", controller: _accountNumberController),
-                  textField(
-                      hintText: "Enter Account Name", label: "Account Name", controller: _beneficiaryNameController),
-                  /* textField(hintText: "Enter Bank Name", label: "Bank Name", controller: _bankNameController), */
-                  /* textField(
-                      hintText: "Enter Routing Number",
-                      label: "Routing Number", controller: _routingNumberController), */
-                  textField(hintText: "Enter Sort Code", label: "Sort Code", controller: _swiftCodeController),
-                  textField(
-                      hintText: "Enter Recipient Address",
-                      label: "Recipient Address", controller: _beneficiaryAddressController),
+                  SizedBox(height: 25.0),
+                  textField( hintText: "Enter Account Number | IBAN", label: "Account Number", controller: _accountNumberController),
+                  textField(hintText: "Enter Routing Number", label: "Routing Number", controller: _routingNumberController),
+                  textField(hintText: "Enter Swift Code", label: "Swift Code", controller: _swiftCodeController),
+                  textField(hintText: "Enter Bank Name", label: "Bank Name", controller: _bankNameController),
+                  textField( hintText: "Enter Account Name", label: "Account Name", controller: _beneficiaryNameController),
+                  _buildBeneficiaryCountry(),
+                  textField( hintText: "Enter Recipient Postal Code", label: "Recipient Postal Code", controller: _beneficiaryPostalCodeController),
+                  textField( hintText: "Enter Recipient Street Number", label: "Recipient Street Number", controller: _beneficiaryStreetNumberController),
+                  textField( hintText: "Enter Recipient Street Name", label: "Recipient Street Name", controller: _beneficiaryStreetNameController),
+                  textField( hintText: "Enter Recipient City", label: "Recipient City", controller: _beneficiaryCityController),
                   _buildServiceFeeCharge(),
                   _buildAmountEntry(),
                   _buildTransferReasonEntry(),
@@ -290,11 +257,17 @@ class _TransferEuropeState extends State<TransferEurope> {
           style: TextStyle(
               color: AppColors.onboardingPlaceholderText,
               fontSize: 17,
-              fontFamily: 'MontserratSemiBold')),
+              fontFamily: 'MontserratSemiBold'
+          ),
+      ),
     );
   }
 
-  /* Widget _buildAccountNumberContainer() {
+  Widget _buildBeneficiaryCountry(){
+
+  }
+
+   Widget _buildAccountNumberContainer() {
     return Container(
       margin: EdgeInsets.only(
         top: screenAwareSize(24, context),
@@ -306,7 +279,9 @@ class _TransferEuropeState extends State<TransferEurope> {
               style: TextStyle(
                   color: AppColors.onboardingPlaceholderText,
                   fontSize: 17,
-                  fontFamily: 'MontserratSemiBold')),
+                  fontFamily: 'MontserratSemiBold'
+              ),
+          ),
           SizedBox(height: screenAwareSize(5, context)),
           TextFormField(
             keyboardType: TextInputType.number,
@@ -332,6 +307,8 @@ class _TransferEuropeState extends State<TransferEurope> {
                 return 'Field is required';
               } else if (val.length < 10) {
                 return 'Value must be 10 digits';
+              }else{
+                return null;
               }
             },
             autovalidate: _autoValidate,
@@ -340,7 +317,6 @@ class _TransferEuropeState extends State<TransferEurope> {
       ),
     );
   }
- */
   Widget _buildBvnContainer() {
     return Container(
       margin: EdgeInsets.only(top: screenAwareSize(30, context)),
@@ -376,6 +352,8 @@ class _TransferEuropeState extends State<TransferEurope> {
                 return 'Field is required';
               } else if (val.length < 11) {
                 return 'Value must be 11 digits';
+              }else{
+                return null;
               }
             },
             autovalidate: _autoValidate,
@@ -385,87 +363,7 @@ class _TransferEuropeState extends State<TransferEurope> {
     );
   }
 
-  /* Widget _selectCountrySection() {
-    return Container(
-      margin: EdgeInsets.only(top: screenAwareSize(30, context)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Select destination country',
-            style: TextStyle(
-                color: AppColors.onboardingPlaceholderText,
-                fontSize: 17,
-                fontWeight: FontWeight.w600),
-          ),
-          SizedBox(height: screenAwareSize(15, context)),
-          Container(
-            child: DropdownButton(
-              isExpanded: true,
-              hint: Text('select bank'), // Not necessary for Option 1
-              value: _selectedCountry,
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedCountry = newValue;
-                  _showIndicator = true;
-                  _bankRetrieved = false;
-                  //_getBanks(_selectedCountry);
-                  _getTranxCharge(_selectedCountry);
-                });
-              },
-              items: countrySymbol.keys.map((country) {
-                return DropdownMenuItem(
-                  child: new Text(country),
-                  value: country,
-                );
-              }).toList(),
-            ),
-          )
-        ],
-      ),
-    );
-  }
- */
-  /* Widget _buildBankSelection() {
-    return Container(
-        margin: EdgeInsets.only(top: screenAwareSize(30, context)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Select bank name',
-              style: TextStyle(
-                  color: AppColors.onboardingPlaceholderText,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: screenAwareSize(15, context)),
-            Container(
-              child: DropdownButton(
-                isExpanded: true,
-                hint: Text('select bank'), // Not necessary for Option 1
-                value: _selectedBank,
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedBank = newValue;
-                    _banks = _bankList
-                        .where((bank) => bank.name == _selectedBank)
-                        .toList();
-                    _bankCode = _banks[0].code;
-                  });
-                },
-                items: _bankList.map((bank) {
-                  return DropdownMenuItem(
-                    child: new Text(bank.name),
-                    value: bank.name,
-                  );
-                }).toList(),
-              ),
-            )
-          ],
-        ));
-  }
- */
+
   Widget _buildAmountEntry() {
     return Container(
       margin: EdgeInsets.only(
@@ -478,7 +376,9 @@ class _TransferEuropeState extends State<TransferEurope> {
               style: TextStyle(
                   color: AppColors.onboardingPlaceholderText,
                   fontSize: 17,
-                  fontFamily: 'MontserratSemiBold')),
+                  fontFamily: 'MontserratSemiBold'
+              ),
+          ),
           SizedBox(height: screenAwareSize(5, context)),
           TextFormField(
             keyboardType: TextInputType.number,
@@ -495,19 +395,20 @@ class _TransferEuropeState extends State<TransferEurope> {
               hasFloatingPlaceholder: false,
               labelStyle: TextStyle(
                   color: AppColors.onboardingTextFieldHintTextColor,
-                  fontSize: 14),
+                  fontSize: 14
+              ),
             ),
             validator: (val) {
               if (val.isEmpty) {
                 return 'Field is required';
               } else if (double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) <
-                  10000.0) {
-                return 'Amount must be at least 10,000 naira';
+                  200.0) {
+                return 'Amount must be at least EUR 200';
               } else if(double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) >
-                  2000000.0) {
-                return 'Amount cannot be more than 2,000,000 naira';
+                  5000.0) {
+                return 'Amount cannot be more than EUR 5,000';
               }
               return null;
             },
@@ -530,7 +431,9 @@ class _TransferEuropeState extends State<TransferEurope> {
               style: TextStyle(
                   color: AppColors.onboardingPlaceholderText,
                   fontSize: 17,
-                  fontFamily: 'MontserratSemiBold')),
+                  fontFamily: 'MontserratSemiBold'
+              ),
+          ),
           SizedBox(height: screenAwareSize(5, context)),
           TextField(
             keyboardType: TextInputType.text,
@@ -547,7 +450,8 @@ class _TransferEuropeState extends State<TransferEurope> {
               hasFloatingPlaceholder: false,
               labelStyle: TextStyle(
                   color: AppColors.onboardingTextFieldHintTextColor,
-                  fontSize: 14),
+                  fontSize: 14
+              ),
             ),
           )
         ],
@@ -616,12 +520,7 @@ class _TransferEuropeState extends State<TransferEurope> {
   void _verifyAccount() {
     print("selected bank code is ---> $_bankCode");
     NetworkService service = NetworkService();
-    // AddAccountRequest accountRequest =
-    //     new AddAccountRequest(_accountNumberController.text.trim(), _bankCode);
-
-    // service.addAccount(accountRequest).then((response) {
-    //   if (response.responseCode == "00" && response.status == "success") {
-    //     _removeDialog();
+    _removeDialog();
 
     String amountText =
         _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
@@ -696,7 +595,9 @@ class _TransferEuropeState extends State<TransferEurope> {
               insetAnimationDuration: Duration(milliseconds: 100),
               elevation: 10.0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10.0))),
+                  borderRadius: BorderRadius.all(Radius.circular(10.0),
+                  ),
+              ),
               child: SizedBox(
                   height: 100.0,
                   child: Row(children: <Widget>[
@@ -704,7 +605,8 @@ class _TransferEuropeState extends State<TransferEurope> {
                     SizedBox(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.buttonColor),
+                            AppColors.buttonColor
+                        ),
                       ),
                     ),
                     const SizedBox(width: 15.0),
@@ -714,8 +616,13 @@ class _TransferEuropeState extends State<TransferEurope> {
                             style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 22.0,
-                                fontWeight: FontWeight.w700)))
-                  ]))),
+                                fontWeight: FontWeight.w700
+                            ),
+                        ),
+                    )
+                  ]),
+              ),
+          ),
         );
       },
     );

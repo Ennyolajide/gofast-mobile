@@ -194,7 +194,9 @@ class _LoginState extends State<Login> {
               color: AppColors.onboardingPlaceholderText,
               fontSize: 19,
               fontFamily: 'MontserratBold',
-              fontWeight: FontWeight.bold)),
+              fontWeight: FontWeight.bold
+          ),
+      ),
     );
   }
 
@@ -203,7 +205,7 @@ class _LoginState extends State<Login> {
       margin: EdgeInsets.symmetric(horizontal: 19),
       child: TextFormField(
         style: TextStyle(fontSize: 16),
-        maxLines: null,
+        maxLines: 1,
         controller: _passwordController,
         keyboardType: TextInputType.text,
         obscureText: passwordVisible,
@@ -289,8 +291,7 @@ class _LoginState extends State<Login> {
             onTap: () {
               Navigator.of(context, rootNavigator: false).push(
                 CupertinoPageRoute<bool>(
-                  builder: (BuildContext context) =>
-                      PhoneNumberEntry("signUpType"),
+                  builder: (BuildContext context) => PhoneNumberEntry("signUpType"),
                 ),
               );
             },
@@ -416,7 +417,9 @@ class _LoginState extends State<Login> {
                                 color: Colors.black,
                                 fontSize: 22.0,
                                 fontWeight: FontWeight.w700)))
-                  ]))),
+                  ]),
+              ),
+          ),
         );
       },
     );

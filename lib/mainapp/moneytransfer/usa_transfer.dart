@@ -28,7 +28,6 @@ class TransferUSD extends StatefulWidget {
 }
 
 class _TransferUSDState extends State<TransferUSD> {
-  var _selectedBank;
   bool _autoValidate = false;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = new GlobalKey<FormState>();
@@ -43,18 +42,13 @@ class _TransferUSDState extends State<TransferUSD> {
   final _beneficiaryNameController = TextEditingController();
 
   String _selectedCountry = "United States";
-  bool _bankRetrieved = false;
   bool _showIndicator = true;
-  List<Bank> _bankList;
   BuildContext _dialogContext;
   Firestore _firestore = Firestore.instance;
   FirebaseAuth _mAuth = FirebaseAuth.instance;
   FirebaseUser fbUser;
-  bool _isShowing = false;
-  List<Bank> _banks; //for bank code
   String _bankCode;
   double _charge = 0.0;
-  double _dollarToNaira = 0.0;
   double _percentageCharge = 0.0;
   double _countryTranxCharge = 0.0;
   Map<String, dynamic> _charges; 
@@ -64,7 +58,7 @@ class _TransferUSDState extends State<TransferUSD> {
       String amountText =
           _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
 
-      if (_amountController.text.isNotEmpty && double.parse(amountText) >= 10000) {
+      if (_amountController.text.isNotEmpty && double.parse(amountText) >= 200) {
         setState(() {
           _charge =  _countryTranxCharge + (_percentageCharge/100 * double.parse(amountText));
         });
@@ -78,7 +72,6 @@ class _TransferUSDState extends State<TransferUSD> {
 
   @override
   void initState() {
-    //_getBanks("United States");
     _initPreferences();
     _getFirebaseUser();
     _loadCharges();
@@ -106,14 +99,12 @@ class _TransferUSDState extends State<TransferUSD> {
         "charge" : 5, "currency" : "USD", "percentageCharge" : 2,
       }
     };
-    setState(() {
-      _dollarToNaira = 362;
-    });
+
   }
 
   void _getTranxCharge(String countryName){
     Map<String, dynamic> tranxCharge = _charges[countryName];
-    var _fee = tranxCharge['charge'] * _dollarToNaira;
+    var _fee = tranxCharge['charge'];
     var _percentCharge = tranxCharge['percentageCharge'];
     setState(() {
       _countryTranxCharge = _fee.toDouble();
@@ -121,42 +112,6 @@ class _TransferUSDState extends State<TransferUSD> {
     });
   }
 
-/*  void _getBanks(String bankName) {
-    NetworkService _networkService = new NetworkService();
-
-    _networkService
-        .getTransferBanks(countrySymbol[bankName], UrlConstants.LIVE_PUBLIC_KEY)
-        .then((response) {
-      if (response.status == "success") {
-        setState(() {
-          _showIndicator = false;
-          _bankRetrieved = true;
-        });
-
-        _bankList = response.banks;
-        _selectedBank = _bankList.elementAt(0).name;
-        setState(() {
-          _bankCode = _bankList.elementAt(0).code;
-        });
-      } else {
-        setState(() {
-          _showIndicator = false;
-        });
-        _showErrorDialog(
-          context,
-          "Banks Retrieval failed!",
-          response.message,
-        );
-      }
-    }).catchError((e) {
-      print("error occurred while getting banks");
-      setState(() {
-        _showIndicator = false;
-      });
-      _showErrorDialog(context, "Error",
-          "An error occured while retrieving banks, try Again");
-    });
-  }*/
 
   void _showErrorDialog(BuildContext context, String title, String message) {
     showDialog<dynamic>(
@@ -179,7 +134,9 @@ class _TransferUSDState extends State<TransferUSD> {
                       style: TextStyle(
                           color: AppColors.buttonColor,
                           fontSize: 14,
-                          fontWeight: FontWeight.bold)),
+                          fontWeight: FontWeight.bold
+                      ),
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop();
                     print("recalled");
@@ -207,7 +164,8 @@ class _TransferUSDState extends State<TransferUSD> {
                     style: TextStyle(
                         color: AppColors.buttonColor,
                         fontSize: 14,
-                        fontWeight: FontWeight.bold),
+                        fontWeight: FontWeight.bold
+                    ),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -215,7 +173,6 @@ class _TransferUSDState extends State<TransferUSD> {
                     setState(() {
                       _showIndicator = true;
                     });
-                    //_getBanks("United States");
                   },
                 ),
               ]);
@@ -229,7 +186,6 @@ class _TransferUSDState extends State<TransferUSD> {
     _accountNumberController.dispose();
     _amountController.dispose();
     _remarksController.dispose();
-    // _bvnController.dispose();
     super.dispose();
   }
 
@@ -240,11 +196,14 @@ class _TransferUSDState extends State<TransferUSD> {
       appBar: AppBar(
         leading: BackButton(color: Colors.white),
         backgroundColor: AppColors.buttonColor,
-        title: Text('Transfer Money to USA ',
+        title: Text(
+            'Transfer Money to USA ',
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 17,
-                fontWeight: FontWeight.w700)),
+                fontWeight: FontWeight.w700
+            ),
+        ),
       ),
       body: Stack(
         children: <Widget>[
@@ -254,21 +213,13 @@ class _TransferUSDState extends State<TransferUSD> {
               key: _formKey,
               child: ListView(
                 children: <Widget>[
-                  //_selectCountrySection(),
-                  textField(
-                      hintText: "Enter Account Number", label: "Account Number", controller: _accountNumberController),
-                  textField(
-                      hintText: "Enter Account Name", label: "Account Name", controller: _beneficiaryNameController),
-                  /*
-                  textField(hintText: "Enter Bank Name", label: "Bank Name", controller: _bankNameController), */
-                  textField(
-                      hintText: "Enter Routing Number",
-                      label: "Routing Number", controller: _routingNumberController),
-                  /* textField(hintText: "Enter Swift Code", label: "Swift Code", controller: _swiftCodeController), */
-                  textField(
-                      hintText: "Enter Recipient Address",
-                      label: "Recipient Address", controller: _beneficiaryAddressController),
-
+                  SizedBox(height: 25.0),
+                  textField( hintText: "Enter Account Number", label: "Account Number", controller: _accountNumberController),
+                  textField(hintText: "Enter Routing Number", label: "Routing Number", controller: _routingNumberController),
+                  textField(hintText: "Enter Swift Code", label: "Swift Code", controller: _swiftCodeController),
+                  textField(hintText: "Enter Account Name", label: "Account Name", controller: _beneficiaryNameController),
+                  textField(hintText: "Enter Bank Name", label: "Bank Name", controller: _bankNameController),
+                  textField(hintText: "Enter Recipient Address", label: "Recipient Address", controller: _beneficiaryAddressController),
                   _buildServiceFeeCharge(),
                   _buildAmountEntry(),
                   _buildTransferReasonEntry(),
@@ -328,14 +279,17 @@ class _TransferUSDState extends State<TransferUSD> {
               labelText: 'Account number',
               hasFloatingPlaceholder: false,
               labelStyle: TextStyle(
-                  color: AppColors.onboardingTextFieldHintTextColor,
-                  fontSize: 14),
+                fontSize: 14,
+                color: AppColors.onboardingTextFieldHintTextColor,
+              ),
             ),
             validator: (val) {
               if (val.isEmpty) {
                 return 'Field is required';
               } else if (val.length < 10) {
                 return 'Value must be 10 digits';
+              }else{
+                return null;
               }
             },
             autovalidate: _autoValidate,
@@ -345,7 +299,7 @@ class _TransferUSDState extends State<TransferUSD> {
     );
   }
 
-  Widget _buildBvnContainer() {
+ /* Widget _buildBvnContainer() {
     return Container(
       margin: EdgeInsets.only(top: screenAwareSize(30, context)),
       child: Column(
@@ -356,7 +310,8 @@ class _TransferUSDState extends State<TransferUSD> {
             style: TextStyle(
                 color: AppColors.onboardingPlaceholderText,
                 fontSize: 17,
-                fontWeight: FontWeight.w600),
+                fontWeight: FontWeight.w600
+            ),
           ),
           SizedBox(height: screenAwareSize(10, context)),
           TextFormField(
@@ -369,8 +324,7 @@ class _TransferUSDState extends State<TransferUSD> {
                 contentPadding: EdgeInsets.only(bottom: 12, left: 12),
                 hintText: 'Bvn',
                 focusedBorder: UnderlineInputBorder(
-                  borderSide:
-                      BorderSide(color: AppColors.buttonColor, width: 1.0),
+                  borderSide: BorderSide(color: AppColors.buttonColor, width: 1.0),
                 ),
                 hintStyle: TextStyle(
                     color: AppColors.onboardingTextFieldHintTextColor),
@@ -380,6 +334,8 @@ class _TransferUSDState extends State<TransferUSD> {
                 return 'Field is required';
               } else if (val.length < 11) {
                 return 'Value must be 11 digits';
+              }else{
+                return null;
               }
             },
             autovalidate: _autoValidate,
@@ -387,88 +343,9 @@ class _TransferUSDState extends State<TransferUSD> {
         ],
       ),
     );
-  }
-
-  /* Widget _selectCountrySection() {
-    return Container(
-      margin: EdgeInsets.only(top: screenAwareSize(30, context)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Select destination country',
-            style: TextStyle(
-                color: AppColors.onboardingPlaceholderText,
-                fontSize: 17,
-                fontWeight: FontWeight.w600),
-          ),
-          SizedBox(height: screenAwareSize(15, context)),
-          Container(
-            child: DropdownButton(
-              isExpanded: true,
-              hint: Text('select bank'), // Not necessary for Option 1
-              value: _selectedCountry,
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedCountry = newValue;
-                  _showIndicator = true;
-                  _bankRetrieved = false;
-                  _getBanks(_selectedCountry);
-                  _getTranxCharge(_selectedCountry);
-                });
-              },
-              items: countrySymbol.keys.map((country) {
-                return DropdownMenuItem(
-                  child: new Text(country),
-                  value: country,
-                );
-              }).toList(),
-            ),
-          )
-        ],
-      ),
-    );
-  } */
-
-  /* Widget _buildBankSelection() {
-    return Container(
-        margin: EdgeInsets.only(top: screenAwareSize(30, context)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Select bank name',
-              style: TextStyle(
-                  color: AppColors.onboardingPlaceholderText,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: screenAwareSize(15, context)),
-            Container(
-              child: DropdownButton(
-                isExpanded: true,
-                hint: Text('select bank'), // Not necessary for Option 1
-                value: _selectedBank,
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedBank = newValue;
-                    _banks = _bankList
-                        .where((bank) => bank.name == _selectedBank)
-                        .toList();
-                    _bankCode = _banks[0].code;
-                  });
-                },
-                items: _bankList.map((bank) {
-                  return DropdownMenuItem(
-                    child: new Text(bank.name),
-                    value: bank.name,
-                  );
-                }).toList(),
-              ),
-            )
-          ],
-        ));
   }*/
+
+
  
   Widget _buildAmountEntry() {
     return Container(
@@ -482,7 +359,9 @@ class _TransferUSDState extends State<TransferUSD> {
               style: TextStyle(
                   color: AppColors.onboardingPlaceholderText,
                   fontSize: 17,
-                  fontFamily: 'MontserratSemiBold')),
+                  fontFamily: 'MontserratSemiBold'
+              ),
+          ),
           SizedBox(height: screenAwareSize(5, context)),
           TextFormField(
             keyboardType: TextInputType.number,
@@ -506,12 +385,12 @@ class _TransferUSDState extends State<TransferUSD> {
                 return 'Field is required';
               } else if (double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) <
-                  10000.0) {
-                return 'Amount must be at least 10,000 naira';
+                  200.0) {
+                return 'Amount must be at least \$200 ';
               } else if(double.parse(
                       val.trim().replaceAll(",", "").replaceAll("-", "")) >
-                  2000000.0) {
-                return 'Amount cannot be more than 2,000,0000 naira';
+                  5000.0) {
+                return 'Amount cannot be more than \$5,000';
               }
               return null;
             },

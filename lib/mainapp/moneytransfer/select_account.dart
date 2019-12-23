@@ -105,7 +105,10 @@ class _SelectAccountState extends State<SelectAccount>
                     return Center(
                         child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.buttonColor)));
+                                AppColors.buttonColor
+                            ),
+                        ),
+                    );
                   }
                   if (snapshot.hasError) {
                     return Center(
@@ -280,7 +283,8 @@ class _SelectAccountState extends State<SelectAccount>
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
             side: BorderSide(color: AppColors.accountBorderColor, width: 0.5),
-            borderRadius: BorderRadius.circular(8)),
+            borderRadius: BorderRadius.circular(8),
+        ),
         child: Padding(
           padding: EdgeInsets.symmetric(
               horizontal: 19, vertical: screenAwareSize(14, context)),
@@ -389,8 +393,13 @@ class _SelectAccountState extends State<SelectAccount>
                             style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 22.0,
-                                fontWeight: FontWeight.w700)))
-                  ]))),
+                                fontWeight: FontWeight.w700
+                            ),
+                        ),
+                    )
+                  ]),
+              ),
+          ),
         );
       },
     );

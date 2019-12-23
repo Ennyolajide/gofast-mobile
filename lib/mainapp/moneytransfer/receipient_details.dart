@@ -372,6 +372,8 @@ class _TransferMoneyState extends State<TransferMoney> {
                 return 'Field is required';
               } else if (val.length < 10) {
                 return 'Value must be 10 digits';
+              }else{
+                return null;
               }
             },
             autovalidate: _autoValidate,
@@ -416,6 +418,8 @@ class _TransferMoneyState extends State<TransferMoney> {
                 return 'Field is required';
               } else if (val.length < 11) {
                 return 'Value must be 11 digits';
+              }else{
+                return null;
               }
             },
             autovalidate: _autoValidate,

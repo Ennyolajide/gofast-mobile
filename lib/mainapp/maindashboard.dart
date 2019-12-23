@@ -130,7 +130,9 @@ class _MainDashboardState extends State<MainDashboard>
                       Navigator.push(
                           context,
                           CupertinoPageRoute(
-                              builder: (context) => ChangeImage()));
+                              builder: (context) => ChangeImage()
+                          ),
+                      );
                     },
                     child: ClipOval(
                       child: Container(
@@ -255,7 +257,8 @@ class _MainDashboardState extends State<MainDashboard>
             fontSize: 17,
             letterSpacing: 0.33,
             fontFamily: 'MontserratSemiBold',
-            fontWeight: FontWeight.w500),
+            fontWeight: FontWeight.w500
+        ),
       ),
     );
   }
@@ -383,7 +386,8 @@ class _MainDashboardState extends State<MainDashboard>
             fontSize: 17,
             letterSpacing: 0.33,
             fontFamily: 'MontserratSemiBold',
-            fontWeight: FontWeight.w500),
+            fontWeight: FontWeight.w500
+        ),
       ),
     );
   }
@@ -422,7 +426,9 @@ class _MainDashboardState extends State<MainDashboard>
           decoration: BoxDecoration(
               image: DecorationImage(
                   fit: BoxFit.cover,
-                  image: AssetImage('assets/dashboard_header_bg.png'))),
+                  image: AssetImage('assets/dashboard_header_bg.png'),
+              ),
+          ),
           height: screenAwareSize(230, context),
         ),
         Container(
@@ -451,7 +457,9 @@ class _MainDashboardState extends State<MainDashboard>
                     ),
                     Expanded(
                         child: Image.asset('assets/gofast.png',
-                            width: 100, height: 20)),
+                            width: 100, height: 20
+                        ),
+                    ),
                     InkWell(
                       onTap: () {
                         Navigator.of(context, rootNavigator: false).push(
@@ -735,7 +743,10 @@ class _MainDashboardState extends State<MainDashboard>
                 decoration: BoxDecoration(
                     border: Border(
                         top: BorderSide(
-                            color: AppColors.onboardingTextFieldBorder))),
+                            color: AppColors.onboardingTextFieldBorder
+                        ),
+                    ),
+                ),
               ))
             ],
           ),
@@ -1377,24 +1388,7 @@ class _MainDashboardState extends State<MainDashboard>
                       );
                     },
                   ),
-                 /*  ListTile(
-                    title: Text(
-                      'African Countries',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.bold),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.of(context, rootNavigator: false).push(
-                        CupertinoPageRoute<bool>(
-                          builder: (BuildContext context) =>  TransferMoney(),
-                        ),
-                      );
-                    },
-                  ),
-               */  ],
+                 ],
               ),
             ),
           );
