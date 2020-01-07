@@ -58,20 +58,19 @@ class _TransferEuropeState extends State<TransferEurope> {
   Firestore _firestore = Firestore.instance;
   FirebaseAuth _mAuth = FirebaseAuth.instance;
   FirebaseUser fbUser;
-  bool _isShowing = false;
   String _bankCode;
   double _charge = 0.0;
   double _percentageCharge = 0.0;
   double _countryTranxCharge = 0.0;
-  Map<String, dynamic> _charges; 
+  String _selectedEuropeanCountry = 'United Kindom';
+  Map<String, dynamic> _charges;
 
   _TransferEuropeState() {
     _amountController.addListener(() {
       String amountText =
           _amountController.text.trim().replaceAll(",", "").replaceAll("-", "");
 
-      if (_amountController.text.isNotEmpty &&
-          double.parse(amountText) >= 200) {
+      if (_amountController.text.isNotEmpty && double.parse(amountText) >= 200) {
         setState(() {
           _charge =  _countryTranxCharge + (_percentageCharge/100 * double.parse(amountText));
         });
@@ -225,13 +224,13 @@ class _TransferEuropeState extends State<TransferEurope> {
               key: _formKey,
               child: ListView(
                 children: <Widget>[
-                  SizedBox(height: 25.0),
+                  //SizedBox(height: 5.0),
+                  _buildBeneficiaryCountry(),
                   textField( hintText: "Enter Account Number | IBAN", label: "Account Number", controller: _accountNumberController),
                   textField(hintText: "Enter Routing Number", label: "Routing Number", controller: _routingNumberController),
                   textField(hintText: "Enter Swift Code", label: "Swift Code", controller: _swiftCodeController),
                   textField(hintText: "Enter Bank Name", label: "Bank Name", controller: _bankNameController),
                   textField( hintText: "Enter Account Name", label: "Account Name", controller: _beneficiaryNameController),
-                  _buildBeneficiaryCountry(),
                   textField( hintText: "Enter Recipient Postal Code", label: "Recipient Postal Code", controller: _beneficiaryPostalCodeController),
                   textField( hintText: "Enter Recipient Street Number", label: "Recipient Street Number", controller: _beneficiaryStreetNumberController),
                   textField( hintText: "Enter Recipient Street Name", label: "Recipient Street Name", controller: _beneficiaryStreetNameController),
@@ -264,7 +263,40 @@ class _TransferEuropeState extends State<TransferEurope> {
   }
 
   Widget _buildBeneficiaryCountry(){
-
+      return Container(
+        margin: EdgeInsets.only(top: screenAwareSize(30, context)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              'Select destination country',
+              style: TextStyle(
+                  color: AppColors.onboardingPlaceholderText,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: screenAwareSize(15, context)),
+            Container(
+              child: DropdownButton(
+                isExpanded: true,
+                hint: Text('select bank'), // Not necessary for Option 1
+                value: _selectedEuropeanCountry,
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedEuropeanCountry = newValue;
+                  });
+                },
+                items: europeCountries.keys.map((country) {
+                  return DropdownMenuItem(
+                    child: new Text(country),
+                    value: country,
+                  );
+                }).toList(),
+              ),
+            )
+          ],
+        ),
+      );
   }
 
    Widget _buildAccountNumberContainer() {
@@ -328,7 +360,8 @@ class _TransferEuropeState extends State<TransferEurope> {
             style: TextStyle(
                 color: AppColors.onboardingPlaceholderText,
                 fontSize: 17,
-                fontWeight: FontWeight.w600),
+                fontWeight: FontWeight.w600
+            ),
           ),
           SizedBox(height: screenAwareSize(10, context)),
           TextFormField(
@@ -536,7 +569,7 @@ class _TransferEuropeState extends State<TransferEurope> {
     meta["BankName"] = _bankNameController.text.trim();
     meta["BeneficiaryName"] = _beneficiaryNameController.text.trim();
     meta["BeneficiaryAddress"] = _beneficiaryAddressController.text.trim();
-    meta["BeneficiaryCountry"] = "US";
+    meta["BeneficiaryCountry"] = _selectedEuropeanCountry;
 
     print("final amount charge is ->> $finalAmountCharge");
     print("final final amount to transfer --> $amountEntered");
